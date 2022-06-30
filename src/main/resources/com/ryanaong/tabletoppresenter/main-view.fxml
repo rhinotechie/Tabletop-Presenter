@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import org.controlsfx.control.StatusBar?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ListView?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.ryanaong.tabletoppresenter.TabletopController">
+    <top>
+        <MenuBar>
+            <Menu text="_File">
+                <MenuItem text="Import foreground"/>
+                <MenuItem text="Import background"/>
+                <MenuItem text="Import music"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="Exit" onAction="#onExitClicked"/>
+            </Menu>
+            <Menu text="_Presenter">
+                <MenuItem text="Start presentation"/>
+                <MenuItem text="End presentation" disable="true"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="Freeze presentation" disable="true"/>
+                <MenuItem text="Unfreeze presentation" disable="true"/>
+                <MenuItem text="Clear presentation"/>
+            </Menu>
+            <Menu text="_Scene">
+                <MenuItem text="Show foreground" disable="true"/>
+                <MenuItem text="Hide foreground"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="Save scene as ..."/>
+            </Menu>
+            <Menu text="_Music player">
+                <MenuItem text="Start/Resume"/>
+                <MenuItem text="Pause" disable="true"/>
+                <MenuItem text="Restart" disable="true"/>
+            </Menu>
+            <Menu text="_Info">
+                <MenuItem text="User's Guide"/>
+                <MenuItem text="About"/>
+            </Menu>
+        </MenuBar>
+    </top>
+    <left>
+
+    </left>
+    <center>
+        <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
+            <VBox>
+                <TitledPane text="Foregrounds">
+                    <ListView fx:id="foregroundList">
+
+                    </ListView>
+                </TitledPane>
+                <TitledPane text="Backgrounds">
+                    <ListView fx:id="backgroundList">
+
+                    </ListView>
+                </TitledPane>
+                <TitledPane text="Music">
+                    <ListView fx:id="musicList">
+
+                    </ListView>
+                </TitledPane>
+                <TitledPane text="Scenes">
+                    <ListView fx:id="sceneList">
+
+                    </ListView>
+                </TitledPane>
+            </VBox>
+        </ScrollPane>
+
+    </center>
+    <right>
+        <Canvas fx:id="previewCanvas" width="300" height="300" BorderPane.alignment="TOP_CENTER"/>
+    </right>
+    <bottom>
+        <StatusBar>
+
+        </StatusBar>
+    </bottom>
+</BorderPane>
