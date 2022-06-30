@@ -9,6 +9,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,26 +30,36 @@ public class TabletopController {
     private List<String> testMusic;
 
     public void initialize(){
+        File foregroundDir = new File("./Foregrounds");
+        File backgroundDir = new File("./Backgrounds");
+        File musicDir = new File("./Music");
+        File sceneDir = new File("./Scenes");
 
-        // Test data for item lists
-        // TODO: Remove test data
-        testMusic = new ArrayList<>();
-        testMusic.add("Dark Cave");
-        testMusic.add("Ocean");
-        testMusic.add("Haunted House");
-        musicList.getItems().setAll(testMusic);
+        if (!foregroundDir.mkdir()){
+            // TODO: Load foreground image resource names into item list.
+            String[] foregrounds = foregroundDir.list();
+            foregroundList.getItems().setAll(foregrounds);
+        }
+
+        if (!backgroundDir.mkdir()){
+            // TODO: Load background image resource names into item list.
+            String[] backgrounds = backgroundDir.list();
+            backgroundList.getItems().setAll(backgrounds);
+        }
+
+        if (!musicDir.mkdir()){
+            // TODO: Load music resource names into item list.
+            String[] music = musicDir.list();
+            musicList.getItems().setAll(music);
+        }
+
+        if (!sceneDir.mkdir()){
+            // TODO: Load scenes resource names into item list.
+            String[] scenes = sceneDir.list();
+            sceneList.getItems().setAll(scenes);
+        }
 
         // Enables click behavior for item lists.
-        sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if(t1 != null){
-                    String scene = sceneList.getSelectionModel().getSelectedItem();
-                    //TODO: Load resource from project directory using item string.
-                }
-            }
-        });
         foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -73,6 +86,17 @@ public class TabletopController {
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
                     String music = musicList.getSelectionModel().getSelectedItem();
+                    System.out.println(t1);
+                    //TODO: Load resource from project directory using item string.
+                }
+            }
+        });
+        sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if(t1 != null){
+                    String scene = sceneList.getSelectionModel().getSelectedItem();
                     //TODO: Load resource from project directory using item string.
                 }
             }
