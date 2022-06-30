@@ -46,8 +46,6 @@ public class TableTopApplication extends Application {
         stage.setTitle("Tabletop Presenter");
         stage.setScene(scene);
         stage.show();
-
-
     }
 
     public static void main(String[] args) {
