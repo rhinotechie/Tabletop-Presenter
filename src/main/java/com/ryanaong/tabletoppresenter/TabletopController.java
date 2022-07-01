@@ -8,9 +8,17 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageInputStream;
+import java.awt.image.BufferedImage;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -63,24 +71,37 @@ public class TabletopController {
         }
 
         // Enables click behavior for item lists.
-        foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if (t1 != null){
-                    String foreground = foregroundList.getSelectionModel().getSelectedItem();
-                    //TODO: Load resource from project directory using item string.
-                }
-            }
-        });
         backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         backgroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
-                    String background = backgroundList.getSelectionModel().getSelectedItem();
-                    //TODO: Load resource from project directory using item string.
-
+                    String backgroundName = backgroundList.getSelectionModel().getSelectedItem();
+                    Image image;
+                    try (FileInputStream fileInputStream = new FileInputStream("./Backgrounds/" + backgroundName)) {
+                        image = new Image(fileInputStream);
+                        backgroundImage.setImage(image);
+                    } catch (IllegalArgumentException | IOException e) {
+                        // TODO: Alert user that resource couldn't be loaded.
+                        System.out.println(backgroundName);
+                    }
+                }
+            }
+        });
+        foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if (t1 != null){
+                    String foregroundName = foregroundList.getSelectionModel().getSelectedItem();
+                    Image image;
+                    try (FileInputStream fileInputStream = new FileInputStream("./Foregrounds/" + foregroundName)) {
+                        image = new Image(fileInputStream);
+                        foregroundImage.setImage(image);
+                    } catch (IllegalArgumentException | IOException e) {
+                        // TODO: Alert user that resource couldn't be loaded.
+                        System.out.println(foregroundName);
+                    }
                 }
             }
         });

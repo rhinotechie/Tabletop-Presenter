@@ -80,8 +80,8 @@
     <right>
         <StackPane prefWidth="300" prefHeight="300" BorderPane.alignment="TOP_CENTER">
             <Canvas fx:id="previewCanvas" width="300" height="300" StackPane.alignment="TOP_CENTER"/>
-            <ImageView fx:id="backgroundImage" fitHeight="300" fitWidth="300"/>
-            <ImageView fx:id="foregroundImage" fitHeight="300" fitWidth="300"/>
+            <ImageView fx:id="backgroundImage" fitHeight="300" fitWidth="300" StackPane.alignment="TOP_CENTER"/>
+            <ImageView fx:id="foregroundImage" fitHeight="300" fitWidth="300" StackPane.alignment="TOP_CENTER"/>
         </StackPane>
     </right>
     <bottom>
