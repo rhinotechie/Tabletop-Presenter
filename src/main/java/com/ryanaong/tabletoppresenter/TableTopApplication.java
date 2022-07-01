@@ -36,7 +36,7 @@ public class TableTopApplication extends Application {
         BorderPane root = (BorderPane) scene.getRoot();
 
         // Attaches graphicsContext to fxml canvas.
-        graphicsContext = ((Canvas) root.getRight()).getGraphicsContext2D();
+        graphicsContext = ((Canvas) scene.lookup("#previewCanvas")).getGraphicsContext2D();
 
         // Draws initial content in preview canvas.
         graphicsContext.fillRect(0, 0, 300, 300);

@@ -8,6 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.image.ImageView;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -26,8 +27,10 @@ public class TabletopController {
     public ListView<String> musicList;
     @FXML
     public Canvas previewCanvas;
-
-    private List<String> testMusic;
+    @FXML
+    public ImageView backgroundImage;
+    @FXML
+    public ImageView foregroundImage;
 
     public void initialize(){
         File foregroundDir = new File("./Foregrounds");
@@ -35,25 +38,25 @@ public class TabletopController {
         File musicDir = new File("./Music");
         File sceneDir = new File("./Scenes");
 
-        if (!foregroundDir.mkdir()){
+        if (!foregroundDir.mkdir()) {
             // TODO: Load foreground image resource names into item list.
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
         }
 
-        if (!backgroundDir.mkdir()){
+        if (!backgroundDir.mkdir()) {
             // TODO: Load background image resource names into item list.
             String[] backgrounds = backgroundDir.list();
             backgroundList.getItems().setAll(backgrounds);
         }
 
-        if (!musicDir.mkdir()){
+        if (!musicDir.mkdir()) {
             // TODO: Load music resource names into item list.
             String[] music = musicDir.list();
             musicList.getItems().setAll(music);
         }
 
-        if (!sceneDir.mkdir()){
+        if (!sceneDir.mkdir()) {
             // TODO: Load scenes resource names into item list.
             String[] scenes = sceneDir.list();
             sceneList.getItems().setAll(scenes);
@@ -77,6 +80,7 @@ public class TabletopController {
                 if (t1 != null){
                     String background = backgroundList.getSelectionModel().getSelectedItem();
                     //TODO: Load resource from project directory using item string.
+
                 }
             }
         });
@@ -86,7 +90,6 @@ public class TabletopController {
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
                     String music = musicList.getSelectionModel().getSelectedItem();
-                    System.out.println(t1);
                     //TODO: Load resource from project directory using item string.
                 }
             }

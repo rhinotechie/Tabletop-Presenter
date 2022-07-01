@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.MenuBar?>
@@ -11,6 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.ImageView?>
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.ryanaong.tabletoppresenter.TabletopController">
     <top>
         <MenuBar>
@@ -52,13 +54,13 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
-                <TitledPane text="Foregrounds">
-                    <ListView fx:id="foregroundList">
+                <TitledPane text="Backgrounds">
+                    <ListView fx:id="backgroundList">
 
                     </ListView>
                 </TitledPane>
-                <TitledPane text="Backgrounds">
-                    <ListView fx:id="backgroundList">
+                <TitledPane text="Foregrounds">
+                    <ListView fx:id="foregroundList">
 
                     </ListView>
                 </TitledPane>
@@ -74,10 +76,13 @@
                 </TitledPane>
             </VBox>
         </ScrollPane>
-
     </center>
     <right>
-        <Canvas fx:id="previewCanvas" width="300" height="300" BorderPane.alignment="TOP_CENTER"/>
+        <StackPane prefWidth="300" prefHeight="300" BorderPane.alignment="TOP_CENTER">
+            <Canvas fx:id="previewCanvas" width="300" height="300" StackPane.alignment="TOP_CENTER"/>
+            <ImageView fx:id="backgroundImage" fitHeight="300" fitWidth="300"/>
+            <ImageView fx:id="foregroundImage" fitHeight="300" fitWidth="300"/>
+        </StackPane>
     </right>
     <bottom>
         <StatusBar>
