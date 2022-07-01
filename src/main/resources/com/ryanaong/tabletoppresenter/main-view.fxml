@@ -54,22 +54,22 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
-                <TitledPane text="Scenes">
+                <TitledPane text="Scenes" expanded="false">
                     <ListView fx:id="sceneList">
 
                     </ListView>
                 </TitledPane>
-                <TitledPane text="Backgrounds">
+                <TitledPane text="Backgrounds" expanded="false">
                     <ListView fx:id="backgroundList">
 
                     </ListView>
                 </TitledPane>
-                <TitledPane text="Foregrounds">
+                <TitledPane text="Foregrounds" expanded="false">
                     <ListView fx:id="foregroundList">
 
                     </ListView>
                 </TitledPane>
-                <TitledPane text="Music">
+                <TitledPane text="Music" expanded="false">
                     <ListView fx:id="musicList">
 
                     </ListView>
