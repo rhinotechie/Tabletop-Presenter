@@ -40,6 +40,8 @@ public class TabletopController {
     @FXML
     public ImageView foregroundImage;
 
+    public boolean foregroundVisibility;
+
     public void initialize(){
         File foregroundDir = new File("./Foregrounds");
         File backgroundDir = new File("./Backgrounds");
@@ -125,6 +127,29 @@ public class TabletopController {
                 }
             }
         });
+    }
+
+    // Clears displayed background and unselects the resource from the list.
+    @FXML
+    public void onBackgroundClearedClicked(){
+        backgroundImage.setImage(null);
+        backgroundList.getSelectionModel().clearSelection();
+    }
+
+    // Clears displayed foreground and unselects the resource from the list.
+    @FXML
+    public void onForegroundClearedClicked(){
+        foregroundImage.setImage(null);
+        foregroundList.getSelectionModel().clearSelection();
+    }
+
+    // Clears displayed background and foreground and unselects the resources from the lists.
+    @FXML
+    public void onAllClearedClicked(){
+        backgroundImage.setImage(null);
+        backgroundList.getSelectionModel().clearSelection();
+        foregroundImage.setImage(null);
+        foregroundList.getSelectionModel().clearSelection();
     }
 
     @FXML

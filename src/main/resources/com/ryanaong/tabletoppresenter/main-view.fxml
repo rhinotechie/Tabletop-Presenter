@@ -29,11 +29,11 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="Freeze presentation" disable="true"/>
                 <MenuItem text="Unfreeze presentation" disable="true"/>
-                <MenuItem text="Clear presentation"/>
             </Menu>
             <Menu text="_Scene">
-                <MenuItem text="Show foreground" disable="true"/>
-                <MenuItem text="Hide foreground"/>
+                <MenuItem text="Clear background" onAction="#onBackgroundClearedClicked"/>
+                <MenuItem text="Clear foreground" onAction="#onForegroundClearedClicked"/>
+                <MenuItem text="Clear all" onAction="#onAllClearedClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Save scene as ..."/>
             </Menu>
@@ -54,6 +54,11 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
+                <TitledPane text="Scenes">
+                    <ListView fx:id="sceneList">
+
+                    </ListView>
+                </TitledPane>
                 <TitledPane text="Backgrounds">
                     <ListView fx:id="backgroundList">
 
@@ -66,11 +71,6 @@
                 </TitledPane>
                 <TitledPane text="Music">
                     <ListView fx:id="musicList">
-
-                    </ListView>
-                </TitledPane>
-                <TitledPane text="Scenes">
-                    <ListView fx:id="sceneList">
 
                     </ListView>
                 </TitledPane>
