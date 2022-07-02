@@ -53,30 +53,7 @@ public class TabletopController {
 
 
     public void initialize(){
-        File foregroundDir = new File("./Foregrounds");
-        File backgroundDir = new File("./Backgrounds");
-        File musicDir = new File("./Music");
-        File sceneDir = new File("./Scenes");
-
-        if (!foregroundDir.mkdir()) {
-            String[] foregrounds = foregroundDir.list();
-            foregroundList.getItems().setAll(foregrounds);
-        }
-
-        if (!backgroundDir.mkdir()) {
-            String[] backgrounds = backgroundDir.list();
-            backgroundList.getItems().setAll(backgrounds);
-        }
-
-        if (!musicDir.mkdir()) {
-            String[] music = musicDir.list();
-            musicList.getItems().setAll(music);
-        }
-
-        if (!sceneDir.mkdir()) {
-            String[] scenes = sceneDir.list();
-            sceneList.getItems().setAll(scenes);
-        }
+        onRefreshResourcesClicked();
 
         // Enables click behavior for item lists.
         backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -169,6 +146,63 @@ public class TabletopController {
                 }
             }
         });
+    }
+
+    // Reloads the resource lists.
+    // Re-selects the items that were unselected.
+    @FXML
+    public void onRefreshResourcesClicked(){
+        // Saves previous selections (if any)
+        String prevBackground = null;
+        String prevForeGround = null;
+        String prevMusic = null;
+
+        if(!backgroundList.getSelectionModel().isEmpty()){
+            prevBackground = backgroundList.getSelectionModel().getSelectedItem();
+        }
+        if(!foregroundList.getSelectionModel().isEmpty()){
+            prevForeGround = foregroundList.getSelectionModel().getSelectedItem();
+        }
+        if(!musicList.getSelectionModel().isEmpty()){
+            prevMusic = musicList.getSelectionModel().getSelectedItem();
+        }
+
+        File foregroundDir = new File("./Foregrounds");
+        File backgroundDir = new File("./Backgrounds");
+        File musicDir = new File("./Music");
+        File sceneDir = new File("./Scenes");
+
+        if (!foregroundDir.mkdir()) {
+            String[] foregrounds = foregroundDir.list();
+            foregroundList.getItems().setAll(foregrounds);
+        }
+
+        if (!backgroundDir.mkdir()) {
+            String[] backgrounds = backgroundDir.list();
+            backgroundList.getItems().setAll(backgrounds);
+        }
+
+        if (!musicDir.mkdir()) {
+            String[] music = musicDir.list();
+            musicList.getItems().setAll(music);
+        }
+
+        if (!sceneDir.mkdir()) {
+            String[] scenes = sceneDir.list();
+            sceneList.getItems().setAll(scenes);
+        }
+
+        // Restores previous selections (if any)
+        // Saves previous selections (if any)
+        if (prevBackground != null){
+            backgroundList.getSelectionModel().select(prevBackground);
+        }
+        if (prevForeGround != null){
+            foregroundList.getSelectionModel().select(prevForeGround);
+        }
+        if (prevMusic != null){
+            musicList.getSelectionModel().select(prevMusic);
+        }
     }
 
     // Clears displayed background and unselects the resource from the list.
@@ -290,6 +324,8 @@ public class TabletopController {
         } catch (IOException e){
             // TODO: inform user the file couldn't be created
         }
+
+        onRefreshResourcesClicked();
     }
 
     // Displays dialog for naming a new scene.

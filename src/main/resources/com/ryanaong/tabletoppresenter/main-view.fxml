@@ -20,6 +20,7 @@
                 <MenuItem text="Import foreground"/>
                 <MenuItem text="Import background"/>
                 <MenuItem text="Import music"/>
+                <MenuItem text="Reload resources" onAction="#onRefreshResourcesClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
             </Menu>
