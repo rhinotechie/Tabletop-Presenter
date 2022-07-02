@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -15,7 +16,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageInputStream;
 import java.awt.image.BufferedImage;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,9 +45,10 @@ public class TabletopController {
     public ImageView backgroundImage;
     @FXML
     public ImageView foregroundImage;
-
-    public boolean foregroundVisibility;
     public MediaPlayer mediaPlayer;
+    public MenuItem startResumeItem;
+    public MenuItem pauseMusicItem;
+    public MenuItem restartMusicItem;
 
     public void initialize(){
         File foregroundDir = new File("./Foregrounds");
@@ -112,15 +116,30 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
-                    // Prevents music from overlapping when changing music.
                     if (mediaPlayer != null){
                         mediaPlayer.stop();
                     }
 
+                    // Plays selected music
                     String musicName = musicList.getSelectionModel().getSelectedItem();
-                    Media media = new Media(new File("./Music/" + musicName).toURI().toString());
-                    mediaPlayer = new MediaPlayer(media);
-                    mediaPlayer.play();
+
+                    try {
+                        Media media = new Media(new File("./Music/" + musicName).toURI().toString());
+                        mediaPlayer = new MediaPlayer(media);
+
+                        // Updates media menu
+                        startResumeItem.setDisable(true);
+                        pauseMusicItem.setDisable(false);
+                        restartMusicItem.setDisable(false);
+
+                        mediaPlayer.play();
+                    } catch (IllegalArgumentException iae){
+                        // TODO: Notify user the URL and invalid
+                    } catch (UnsupportedOperationException | MediaException e){
+                        // TODO: Notify user of unplayable file
+                    }
+
+
                 }
             }
         });
@@ -157,6 +176,53 @@ public class TabletopController {
         backgroundList.getSelectionModel().clearSelection();
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
+    }
+
+    // Starts the music. Updates media menu.
+    @FXML
+    public void onStartResumeClicked(){
+        if (mediaPlayer != null){
+            if (mediaPlayer.getStatus() == MediaPlayer.Status.READY || mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED){
+                // Enables/disables music menu items
+                startResumeItem.setDisable(true);
+                pauseMusicItem.setDisable(false);
+                restartMusicItem.setDisable(false);
+
+                mediaPlayer.play();
+            }
+        }
+    }
+
+    // Pauses the music to be resumed later. Updates media menu.
+    @FXML
+    public void onPauseClicked(){
+        if (mediaPlayer != null){
+            System.out.println(mediaPlayer.getStatus());
+            if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                // Enables/disables music menu items
+                startResumeItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                restartMusicItem.setDisable(false);
+
+                mediaPlayer.pause();
+            }
+        }
+    }
+
+    // Plays music from the beginning. Updates media menu.
+    @FXML
+    public void onRestartClicked(){
+        if (mediaPlayer != null){
+            if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING || mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+                // Enables/disables music menu items
+                startResumeItem.setDisable(true);
+                pauseMusicItem.setDisable(false);
+                restartMusicItem.setDisable(true);
+
+                mediaPlayer.seek(Duration.ZERO);
+                mediaPlayer.play();
+            }
+        }
     }
 
     @FXML

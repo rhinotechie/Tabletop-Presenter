@@ -38,9 +38,9 @@
                 <MenuItem text="Save scene as ..."/>
             </Menu>
             <Menu text="_Music player">
-                <MenuItem text="Start/Resume"/>
-                <MenuItem text="Pause" disable="true"/>
-                <MenuItem text="Restart" disable="true"/>
+                <MenuItem fx:id="startResumeItem" text="Start/Resume" disable="true" onAction="#onStartResumeClicked"/>
+                <MenuItem fx:id="pauseMusicItem" text="Pause" disable="true" onAction="#onPauseClicked"/>
+                <MenuItem fx:id="restartMusicItem" text="Restart" disable="true" onAction="#onRestartClicked"/>
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide"/>
