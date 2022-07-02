@@ -190,6 +190,11 @@ public class TabletopController {
         backgroundList.getSelectionModel().clearSelection();
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
+        sceneList.getSelectionModel().clearSelection();
+        musicList.getSelectionModel().clearSelection();
+        if (mediaPlayer != null){
+            this.onPauseClicked();
+        }
     }
 
     // Starts the music. Updates media menu.
@@ -211,7 +216,6 @@ public class TabletopController {
     @FXML
     public void onPauseClicked(){
         if (mediaPlayer != null){
-            System.out.println(mediaPlayer.getStatus());
             if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                 // Enables/disables music menu items
                 startResumeItem.setDisable(false);
