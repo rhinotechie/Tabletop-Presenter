@@ -23,8 +23,11 @@ import javafx.util.Duration;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 
 public class TabletopController {
@@ -145,8 +148,22 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if(t1 != null){
-                    String scene = sceneList.getSelectionModel().getSelectedItem();
-                    //TODO: Load resource from project directory using item string.
+                    String sceneName = sceneList.getSelectionModel().getSelectedItem();
+
+                    // Opens json file and converts the String to a JSONObject.
+                    JSONParser jsonParser = new JSONParser();
+                    JSONObject jsonObject;
+                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName)){
+                        Object obj = jsonParser.parse(fileReader);
+                        jsonObject = (JSONObject) obj;
+                    } catch (IOException | ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    // Selects the scene items from the lists.
+                    backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                    foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                    musicList.getSelectionModel().select((String) jsonObject.get("music"));
                 }
             }
         });
