@@ -47,6 +47,7 @@ public class TableTopApplication extends Application {
         // Configures the current stage window
         stage.setTitle("Tabletop Presenter");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 
