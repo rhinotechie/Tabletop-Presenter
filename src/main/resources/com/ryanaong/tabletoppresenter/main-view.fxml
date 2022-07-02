@@ -35,7 +35,7 @@
                 <MenuItem text="Clear foreground" onAction="#onForegroundClearedClicked"/>
                 <MenuItem text="Clear all" onAction="#onAllClearedClicked"/>
                 <SeparatorMenuItem/>
-                <MenuItem text="Save scene as ..."/>
+                <MenuItem text="Save scene" onAction="#onSaveSceneClicked"/>
             </Menu>
             <Menu text="_Music player">
                 <MenuItem fx:id="startResumeItem" text="Start/Resume" disable="true" onAction="#onStartResumeClicked"/>

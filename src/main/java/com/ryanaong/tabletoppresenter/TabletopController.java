@@ -20,14 +20,11 @@ import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.simple.JSONObject;
 
 
 public class TabletopController {
@@ -222,6 +219,50 @@ public class TabletopController {
                 mediaPlayer.seek(Duration.ZERO);
                 mediaPlayer.play();
             }
+        }
+    }
+
+    @FXML
+    public void onSaveSceneClicked(){
+        // Alert the user that nothing is selected so the scene is not saved.
+        if (backgroundList.getSelectionModel().isEmpty() && foregroundList.getSelectionModel().isEmpty() &&
+                musicList.getSelectionModel().isEmpty()){
+            // TODO: Notify user that nothing is selected
+            return;
+        }
+
+        // Grabs the scene elements, stores them in a hashmap, and converts the map to a json object.
+        Map<String, String> jsonMap = new HashMap<>();
+        if (!backgroundList.getSelectionModel().isEmpty())
+        {
+            jsonMap.put("background", backgroundList.getSelectionModel().getSelectedItem());
+        }
+        if (!foregroundList.getSelectionModel().isEmpty())
+        {
+            jsonMap.put("foreground", foregroundList.getSelectionModel().getSelectedItem());
+        }
+        if (!musicList.getSelectionModel().isEmpty())
+        {
+            jsonMap.put("music", musicList.getSelectionModel().getSelectedItem());
+        }
+        JSONObject jsonObject = new JSONObject(jsonMap);
+
+        // Prompts user for filename.
+        // If it exists, it alerts the user that the file already exists.
+        // Creates a new file and writes the json contents to it.
+        // TODO: Get title from user
+        try {
+            File newFile = new File(".\\Scenes\\someTitle.json");
+            if (!newFile.createNewFile()){
+                //TODO: notify user of existing file
+                System.out.println("File exists");
+            } else {
+                FileWriter fileWriter = new FileWriter(newFile.getAbsoluteFile());
+                fileWriter.write(jsonObject.toJSONString());
+                fileWriter.close();
+            }
+        } catch (IOException e){
+            // TODO: inform user the file couldn't be created
         }
     }
 
