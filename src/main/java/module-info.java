@@ -9,6 +9,7 @@ module com.ryanaong.tabletoppresenter {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires java.desktop;
+    requires javafx.media;
 
     opens com.ryanaong.tabletoppresenter to javafx.fxml;
     exports com.ryanaong.tabletoppresenter;

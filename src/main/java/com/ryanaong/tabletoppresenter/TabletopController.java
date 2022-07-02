@@ -14,6 +14,8 @@ import javafx.scene.image.ImageView;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageInputStream;
 import java.awt.image.BufferedImage;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class TabletopController {
     @FXML
@@ -41,6 +44,7 @@ public class TabletopController {
     public ImageView foregroundImage;
 
     public boolean foregroundVisibility;
+    public MediaPlayer mediaPlayer;
 
     public void initialize(){
         File foregroundDir = new File("./Foregrounds");
@@ -49,25 +53,21 @@ public class TabletopController {
         File sceneDir = new File("./Scenes");
 
         if (!foregroundDir.mkdir()) {
-            // TODO: Load foreground image resource names into item list.
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
         }
 
         if (!backgroundDir.mkdir()) {
-            // TODO: Load background image resource names into item list.
             String[] backgrounds = backgroundDir.list();
             backgroundList.getItems().setAll(backgrounds);
         }
 
         if (!musicDir.mkdir()) {
-            // TODO: Load music resource names into item list.
             String[] music = musicDir.list();
             musicList.getItems().setAll(music);
         }
 
         if (!sceneDir.mkdir()) {
-            // TODO: Load scenes resource names into item list.
             String[] scenes = sceneDir.list();
             sceneList.getItems().setAll(scenes);
         }
@@ -112,8 +112,15 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
-                    String music = musicList.getSelectionModel().getSelectedItem();
-                    //TODO: Load resource from project directory using item string.
+                    // Prevents music from overlapping when changing music.
+                    if (mediaPlayer != null){
+                        mediaPlayer.stop();
+                    }
+
+                    String musicName = musicList.getSelectionModel().getSelectedItem();
+                    Media media = new Media(new File("./Music/" + musicName).toURI().toString());
+                    mediaPlayer = new MediaPlayer(media);
+                    mediaPlayer.play();
                 }
             }
         });
