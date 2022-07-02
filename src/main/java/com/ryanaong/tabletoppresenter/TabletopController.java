@@ -4,26 +4,21 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.FileImageInputStream;
-import java.awt.image.BufferedImage;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -45,10 +40,17 @@ public class TabletopController {
     public ImageView backgroundImage;
     @FXML
     public ImageView foregroundImage;
-    public MediaPlayer mediaPlayer;
+    @FXML
     public MenuItem startResumeItem;
+    @FXML
     public MenuItem pauseMusicItem;
+    @FXML
     public MenuItem restartMusicItem;
+    @FXML
+    public BorderPane mainBorderPane;
+
+    public MediaPlayer mediaPlayer;
+
 
     public void initialize(){
         File foregroundDir = new File("./Foregrounds");
@@ -269,11 +271,14 @@ public class TabletopController {
         JSONObject jsonObject = new JSONObject(jsonMap);
 
         // Prompts user for filename.
-        // If it exists, it alerts the user that the file already exists.
+        String sceneFileName = this.showNewSceneDialog();
+        if (sceneFileName == null || sceneFileName.isEmpty()){
+            return;
+        }
+
         // Creates a new file and writes the json contents to it.
-        // TODO: Get title from user
         try {
-            File newFile = new File(".\\Scenes\\someTitle.json");
+            File newFile = new File(".\\Scenes\\" + sceneFileName + ".json");
             if (!newFile.createNewFile()){
                 //TODO: notify user of existing file
                 System.out.println("File exists");
@@ -284,6 +289,37 @@ public class TabletopController {
             }
         } catch (IOException e){
             // TODO: inform user the file couldn't be created
+        }
+    }
+
+    // Displays dialog for naming a new scene.
+    @FXML
+    public String showNewSceneDialog(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(mainBorderPane.getScene().getWindow());
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("newSceneDialog.fxml"));
+
+        try {
+            dialog.getDialogPane().setContent(fxmlLoader.load());
+        } catch (IOException e){
+            System.out.println("Dialog unavailable");
+            e.printStackTrace();
+            return null;
+        }
+
+        // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK){
+            // Grabs the name from the text field and returns it.
+            NewSceneDialogController newSceneDialogController = (NewSceneDialogController) fxmlLoader.getController();
+            return newSceneDialogController.getSceneName();
+        } else {
+            return null;
         }
     }
 
