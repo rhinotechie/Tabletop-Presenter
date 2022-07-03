@@ -1,6 +1,8 @@
 package com.ryanaong.tabletoppresenter;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -273,34 +275,28 @@ public class TabletopController {
     public void onStartPresenter(){
         if (displayWindow == null){
             displayWindow = new Stage();
+            displayWindow.setMinWidth(300);
+            displayWindow.setMinHeight(300);
+            displayWindow.initModality(Modality.NONE);
             displayWindow.setTitle("Tabletop Presenter - Audience Display");
+            displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
 
             StackPane stackPane = new StackPane();
             stackPane.setPrefHeight(600);
             stackPane.setPrefWidth(600);
-            stackPane.setMinWidth(600);
-            stackPane.setMaxHeight(600);
+            stackPane.setMinWidth(300);
+            stackPane.setMinHeight(300);
+            stackPane.setMaxHeight(Double.POSITIVE_INFINITY);
+            stackPane.setMaxWidth(Double.POSITIVE_INFINITY);
 
-            Scene displayScene = new Scene(stackPane, 600, 600);
+            Scene displayScene = new Scene(stackPane);
+            displayScene.setFill(Color.DARKGRAY);
 
             displayWindow.setScene(displayScene);
-            displayWindow.initModality(Modality.NONE);
-            displayWindow.setMinWidth(300);
-            displayWindow.setMinHeight(300);
-            displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
-
-            // Canvas and graphics for preview window
-            Canvas previewCanvas = new Canvas(600, 600);
-
-            GraphicsContext previewGraphicsContext = previewCanvas.getGraphicsContext2D();
-            previewGraphicsContext.setFill(Color.GRAY);
-            previewGraphicsContext.fillRect(0, 0, 600, 600);
-
-            stackPane.getChildren().add(previewCanvas);
 
             liveBackgroundImageView = new ImageView();
-            liveBackgroundImageView.setFitHeight(600);
-            liveBackgroundImageView.setFitWidth(600);
+            liveBackgroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
+            liveBackgroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
             liveBackgroundImageView.setPreserveRatio(true);
             if (backgroundImage.getImage() != null) {
                 Image liveBackgroundImage = backgroundImage.getImage();
@@ -311,8 +307,8 @@ public class TabletopController {
             stackPane.getChildren().add(liveBackgroundImageView);
 
             liveForegroundImageView = new ImageView();
-            liveForegroundImageView.setFitHeight(600);
-            liveForegroundImageView.setFitWidth(600);
+            liveForegroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
+            liveForegroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
             liveForegroundImageView.setPreserveRatio(true);
             if (foregroundImage.getImage() != null) {
                 Image liveForegroundImage = foregroundImage.getImage();

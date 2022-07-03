@@ -85,7 +85,7 @@
             <ImageView fx:id="backgroundImage" fitHeight="300" fitWidth="300" preserveRatio="true" StackPane.alignment="CENTER"/>
             <ImageView fx:id="foregroundImage" fitHeight="300" fitWidth="300" preserveRatio="true" StackPane.alignment="CENTER"/>
             <Label fx:id="frozenLabel" text="FROZEN" visible="false"
-                   style="-fx-text-fill:WHITE; -fx-font-size 12; -fx-font-weight: bold; -fx-stroke:BLACK; -fx-stroke-width: 2px"
+                   style="-fx-font: 18px Arial; -fx-text-fill: blue; -fx-font-weight: bold;"
                    StackPane.alignment="TOP_LEFT"/>
         </StackPane>
     </right>
