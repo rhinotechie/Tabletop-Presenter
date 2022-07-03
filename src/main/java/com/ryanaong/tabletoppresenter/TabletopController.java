@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -63,6 +64,7 @@ public class TabletopController {
     public MenuItem endPresenterItem;
     public MenuItem freezePresenterItem;
     public MenuItem unfreezePresenterItem;
+    public Label frozenLabel;
     private Stage mainStage;
     private Stage displayWindow;
     private ImageView liveBackgroundImageView;
@@ -84,7 +86,7 @@ public class TabletopController {
                     try (FileInputStream fileInputStream = new FileInputStream("./Backgrounds/" + backgroundName)) {
                         image = new Image(fileInputStream);
                         backgroundImage.setImage(image);
-                        if (liveBackgroundImageView != null){
+                        if (liveBackgroundImageView != null && !isFrozen){
                             liveBackgroundImageView.setImage(image);
                         }
                     } catch (IllegalArgumentException | IOException e) {
@@ -104,7 +106,7 @@ public class TabletopController {
                     try (FileInputStream fileInputStream = new FileInputStream("./Foregrounds/" + foregroundName)) {
                         image = new Image(fileInputStream);
                         foregroundImage.setImage(image);
-                        if (liveForegroundImageView != null){
+                        if (liveForegroundImageView != null && !isFrozen){
                             liveForegroundImageView.setImage(image);
                         }
                     } catch (IllegalArgumentException | IOException e) {
@@ -151,9 +153,15 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if(t1 != null){
-                    // Clears presenter images/audio in case a scene has 2 or 1 item.
+                    // Clears preview and live images and audio in case a scene has 2 or 1 item.
                     backgroundImage.setImage(null);
                     foregroundImage.setImage(null);
+                    if (liveBackgroundImageView != null && !isFrozen){
+                        liveBackgroundImageView.setImage(null);
+                    }
+                    if(liveForegroundImageView != null && !isFrozen){
+                        liveForegroundImageView.setImage(null);
+                    }
                     if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
                         mediaPlayer.pause();
                     }
@@ -285,7 +293,7 @@ public class TabletopController {
             Canvas previewCanvas = new Canvas(600, 600);
 
             GraphicsContext previewGraphicsContext = previewCanvas.getGraphicsContext2D();
-            previewGraphicsContext.setFill(Color.BLACK);
+            previewGraphicsContext.setFill(Color.GRAY);
             previewGraphicsContext.fillRect(0, 0, 600, 600);
 
             stackPane.getChildren().add(previewCanvas);
@@ -335,6 +343,29 @@ public class TabletopController {
         endPresenterItem.setDisable(true);
         freezePresenterItem.setDisable(true);
         unfreezePresenterItem.setDisable(true);
+    }
+
+    @FXML
+    public void onFreezePresenter(){
+        this.isFrozen = true;
+        frozenLabel.setVisible(true);
+        freezePresenterItem.setDisable(true);
+        unfreezePresenterItem.setDisable(false);
+    }
+
+    @FXML
+    public void onUnFreezePresenter(){
+        this.isFrozen = false;
+        frozenLabel.setVisible(false);
+        freezePresenterItem.setDisable(false);
+        unfreezePresenterItem.setDisable(true);
+
+        if(liveBackgroundImageView != null){
+            liveBackgroundImageView.setImage(backgroundImage.getImage());
+        }
+        if(liveForegroundImageView != null){
+            liveForegroundImageView.setImage(foregroundImage.getImage());
+        }
     }
 
     // Reloads the resource lists.
@@ -400,7 +431,7 @@ public class TabletopController {
         backgroundImage.setImage(null);
         backgroundList.getSelectionModel().clearSelection();
 
-        if (liveBackgroundImageView != null){
+        if (liveBackgroundImageView != null && !isFrozen){
             liveBackgroundImageView.setImage(null);
         }
     }
@@ -411,7 +442,7 @@ public class TabletopController {
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
 
-        if (liveForegroundImageView != null){
+        if (liveForegroundImageView != null && !isFrozen){
             liveForegroundImageView.setImage(null);
         }
     }
@@ -424,10 +455,10 @@ public class TabletopController {
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
 
-        if (liveBackgroundImageView != null){
+        if (liveBackgroundImageView != null && !isFrozen){
             liveBackgroundImageView.setImage(null);
         }
-        if (liveForegroundImageView != null){
+        if (liveForegroundImageView != null && !isFrozen){
             liveForegroundImageView.setImage(null);
         }
 

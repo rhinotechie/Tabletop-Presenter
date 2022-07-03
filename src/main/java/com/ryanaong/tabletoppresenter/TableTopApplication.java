@@ -22,7 +22,7 @@ import java.io.IOException;
 
 public class TableTopApplication extends Application {
 
-    GraphicsContext graphicsContext;
+    private GraphicsContext graphicsContext;
 
     @Override
     public void init() throws Exception {
@@ -40,8 +40,9 @@ public class TableTopApplication extends Application {
         graphicsContext = ((Canvas) scene.lookup("#previewCanvas")).getGraphicsContext2D();
 
         // Draws initial content in preview canvas.
+        graphicsContext.setStroke(Color.BLACK);
+        graphicsContext.setFill(Color.GRAY);
         graphicsContext.fillRect(0, 0, 300, 300);
-        graphicsContext.setStroke(Color.valueOf("#0000ff"));
 
         // Configures the current stage window
         stage.setTitle("Tabletop Presenter");
@@ -59,5 +60,9 @@ public class TableTopApplication extends Application {
     @Override
     public void stop() throws Exception {
         super.stop();
+    }
+
+    public GraphicsContext getGraphicsContext() {
+        return graphicsContext;
     }
 }
