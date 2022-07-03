@@ -65,7 +65,9 @@ public class TabletopController {
     public MenuItem unfreezePresenterItem;
     private Stage mainStage;
     private Stage displayWindow;
-    private Scene displayScene;
+    private ImageView liveBackgroundImageView;
+    private ImageView liveForegroundImageView;
+    private boolean isFrozen = false;
 
 
     public void initialize(){
@@ -82,6 +84,9 @@ public class TabletopController {
                     try (FileInputStream fileInputStream = new FileInputStream("./Backgrounds/" + backgroundName)) {
                         image = new Image(fileInputStream);
                         backgroundImage.setImage(image);
+                        if (liveBackgroundImageView != null){
+                            liveBackgroundImageView.setImage(image);
+                        }
                     } catch (IllegalArgumentException | IOException e) {
                         // TODO: Alert user that resource couldn't be loaded.
                         System.out.println(backgroundName);
@@ -99,6 +104,9 @@ public class TabletopController {
                     try (FileInputStream fileInputStream = new FileInputStream("./Foregrounds/" + foregroundName)) {
                         image = new Image(fileInputStream);
                         foregroundImage.setImage(image);
+                        if (liveForegroundImageView != null){
+                            liveForegroundImageView.setImage(image);
+                        }
                     } catch (IllegalArgumentException | IOException e) {
                         // TODO: Alert user that resource couldn't be loaded.
                         System.out.println(foregroundName);
@@ -265,9 +273,9 @@ public class TabletopController {
             stackPane.setMinWidth(600);
             stackPane.setMaxHeight(600);
 
-            displayScene = new Scene(stackPane, 600, 600);
+            Scene displayScene = new Scene(stackPane, 600, 600);
 
-            displayWindow.setScene(this.displayScene);
+            displayWindow.setScene(displayScene);
             displayWindow.initModality(Modality.NONE);
             displayWindow.setMinWidth(300);
             displayWindow.setMinHeight(300);
@@ -282,28 +290,28 @@ public class TabletopController {
 
             stackPane.getChildren().add(previewCanvas);
 
-            ImageView previewBackgroundImageView = new ImageView();
-            previewBackgroundImageView.setFitHeight(600);
-            previewBackgroundImageView.setFitWidth(600);
-            previewBackgroundImageView.setPreserveRatio(true);
+            liveBackgroundImageView = new ImageView();
+            liveBackgroundImageView.setFitHeight(600);
+            liveBackgroundImageView.setFitWidth(600);
+            liveBackgroundImageView.setPreserveRatio(true);
             if (backgroundImage.getImage() != null) {
-                Image previewBackgroundImage = backgroundImage.getImage();
+                Image liveBackgroundImage = backgroundImage.getImage();
                 System.out.println(backgroundImage.getImage().getUrl());
-                previewBackgroundImageView.setImage(previewBackgroundImage);
+                liveBackgroundImageView.setImage(liveBackgroundImage);
             }
 
-            stackPane.getChildren().add(previewBackgroundImageView);
+            stackPane.getChildren().add(liveBackgroundImageView);
 
-            ImageView previewForegroundImageView = new ImageView();
-            previewForegroundImageView.setFitHeight(600);
-            previewForegroundImageView.setFitWidth(600);
-            previewForegroundImageView.setPreserveRatio(true);
+            liveForegroundImageView = new ImageView();
+            liveForegroundImageView.setFitHeight(600);
+            liveForegroundImageView.setFitWidth(600);
+            liveForegroundImageView.setPreserveRatio(true);
             if (foregroundImage.getImage() != null) {
-                Image previewForegroundImage = foregroundImage.getImage();
-                previewForegroundImageView.setImage(previewForegroundImage);
+                Image liveForegroundImage = foregroundImage.getImage();
+                liveForegroundImageView.setImage(liveForegroundImage);
             }
 
-            stackPane.getChildren().add(previewForegroundImageView);
+            stackPane.getChildren().add(liveForegroundImageView);
 
             displayWindow.show();
             
@@ -386,28 +394,45 @@ public class TabletopController {
         }
     }
 
-    // Clears displayed background and unselects the resource from the list.
+    // Clears preview and live background and unselects the resource from the list.
     @FXML
     public void onBackgroundClearedClicked(){
         backgroundImage.setImage(null);
         backgroundList.getSelectionModel().clearSelection();
+
+        if (liveBackgroundImageView != null){
+            liveBackgroundImageView.setImage(null);
+        }
     }
 
-    // Clears displayed foreground and unselects the resource from the list.
+    // Clears preview and live foreground and unselects the resource from the list.
     @FXML
     public void onForegroundClearedClicked(){
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
+
+        if (liveForegroundImageView != null){
+            liveForegroundImageView.setImage(null);
+        }
     }
 
-    // Clears displayed background and foreground and unselects the resources from the lists.
+    // Clears preview and live backgrounds, foregrounds, stops music, and unselects the resources from the lists.
     @FXML
     public void onAllClearedClicked(){
         backgroundImage.setImage(null);
         backgroundList.getSelectionModel().clearSelection();
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
+
+        if (liveBackgroundImageView != null){
+            liveBackgroundImageView.setImage(null);
+        }
+        if (liveForegroundImageView != null){
+            liveForegroundImageView.setImage(null);
+        }
+
         sceneList.getSelectionModel().clearSelection();
+
         musicList.getSelectionModel().clearSelection();
         if (mediaPlayer != null){
             this.onPauseClicked();
