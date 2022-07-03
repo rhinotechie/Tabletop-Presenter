@@ -25,11 +25,11 @@
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
             </Menu>
             <Menu text="_Presenter">
-                <MenuItem text="Start presentation"/>
-                <MenuItem text="End presentation" disable="true"/>
+                <MenuItem fx:id="startPresenterItem" text="Start presentation" onAction="#onStartPresenter"/>
+                <MenuItem fx:id="endPresenterItem" text="End presentation" disable="true" onAction="#onEndPresenter"/>
                 <SeparatorMenuItem/>
-                <MenuItem text="Freeze presentation" disable="true"/>
-                <MenuItem text="Unfreeze presentation" disable="true"/>
+                <MenuItem fx:id="freezePresenterItem" text="Freeze presentation" disable="true"/>
+                <MenuItem fx:id="unfreezePresenterItem" text="Unfreeze presentation" disable="true"/>
             </Menu>
             <Menu text="_Scene">
                 <MenuItem text="Clear background" onAction="#onBackgroundClearedClicked"/>

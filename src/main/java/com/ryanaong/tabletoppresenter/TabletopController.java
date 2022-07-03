@@ -3,20 +3,21 @@ package com.ryanaong.tabletoppresenter;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
+import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.*;
@@ -56,7 +57,13 @@ public class TabletopController {
     public BorderPane mainBorderPane;
 
     public MediaPlayer mediaPlayer;
-    private Stage stage;
+    public MenuItem startPresenterItem;
+    public MenuItem endPresenterItem;
+    public MenuItem freezePresenterItem;
+    public MenuItem unfreezePresenterItem;
+    private Stage mainStage;
+    private Stage displayWindow;
+    private Scene displayScene;
 
 
     public void initialize(){
@@ -162,8 +169,8 @@ public class TabletopController {
         });
     }
 
-    public void setStage(Stage stage){
-        this.stage = stage;
+    public void setMainStage(Stage mainStage){
+        this.mainStage = mainStage;
     }
 
     @FXML
@@ -177,7 +184,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(stage);
+            File sourceFile = fileChooser.showOpenDialog(mainStage);
             if (sourceFile == null){
                 return;
             }
@@ -203,7 +210,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(stage);
+            File sourceFile = fileChooser.showOpenDialog(mainStage);
             if (sourceFile == null){
                 return;
             }
@@ -229,7 +236,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(stage);
+            File sourceFile = fileChooser.showOpenDialog(mainStage);
             if (sourceFile == null){
                 return;
             }
@@ -242,6 +249,46 @@ public class TabletopController {
             // Todo: inform the user that file can't be imported.
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    public void onStartPresenter(){
+        if (displayWindow == null){
+            displayWindow = new Stage();
+            displayWindow.setTitle("Tabletop Presenter - Audience Display");
+
+            StackPane stackPane = new StackPane();
+
+            displayScene = new Scene(stackPane, 600, 600);
+
+            displayWindow.setScene(this.displayScene);
+            displayWindow.initModality(Modality.NONE);
+            displayWindow.setMinWidth(300);
+            displayWindow.setMinHeight(300);
+            displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
+
+            displayWindow.show();
+            
+            // Update menu items
+            startPresenterItem.setDisable(true);
+            endPresenterItem.setDisable(false);
+            freezePresenterItem.setDisable(false);
+            unfreezePresenterItem.setDisable(true);
+        }
+    }
+
+    @FXML
+    public void onEndPresenter(){
+        if (displayWindow != null){
+            displayWindow.close();
+            displayWindow = null;
+        }
+
+        // Update menu items
+        startPresenterItem.setDisable(false);
+        endPresenterItem.setDisable(true);
+        freezePresenterItem.setDisable(true);
+        unfreezePresenterItem.setDisable(true);
     }
 
     // Reloads the resource lists.
