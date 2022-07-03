@@ -15,14 +15,20 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
 
 
 public class TabletopController {
@@ -50,6 +56,7 @@ public class TabletopController {
     public BorderPane mainBorderPane;
 
     public MediaPlayer mediaPlayer;
+    private Stage stage;
 
 
     public void initialize(){
@@ -127,6 +134,13 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if(t1 != null){
+                    // Clears presenter images/audio in case a scene has 2 or 1 item.
+                    backgroundImage.setImage(null);
+                    foregroundImage.setImage(null);
+                    if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
+                        mediaPlayer.pause();
+                    }
+
                     String sceneName = sceneList.getSelectionModel().getSelectedItem();
 
                     // Opens json file and converts the String to a JSONObject.
@@ -146,6 +160,88 @@ public class TabletopController {
                 }
             }
         });
+    }
+
+    public void setStage(Stage stage){
+        this.stage = stage;
+    }
+
+    @FXML
+    public void onLoadBackground(){
+        // FileChooser setup
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import background");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif")
+        );
+
+        // Displays chooser and copies file to resource folder.
+        try {
+            File sourceFile = fileChooser.showOpenDialog(stage);
+            if (sourceFile == null){
+                return;
+            }
+            Path sourcePath = Path.of(sourceFile.getPath());
+            Path destinationPath = Paths.get("./Backgrounds/" + sourceFile.getName());
+            Files.copy(sourcePath, destinationPath);
+
+            onRefreshResourcesClicked();
+        } catch (IOException e){
+            // Todo: inform the user that file can't be imported.
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void onLoadForeground(){
+        // FileChooser setup
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import foreground");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif")
+        );
+
+        // Displays chooser and copies file to resource folder.
+        try {
+            File sourceFile = fileChooser.showOpenDialog(stage);
+            if (sourceFile == null){
+                return;
+            }
+            Path sourcePath = Path.of(sourceFile.getPath());
+            Path destinationPath = Paths.get("./Foregrounds/" + sourceFile.getName());
+            Files.copy(sourcePath, destinationPath);
+
+            onRefreshResourcesClicked();
+        } catch (IOException e){
+            // Todo: inform the user that file can't be imported.
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void onLoadMusic(){
+        // FileChooser setup
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import music");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Audio Files", "*.wav", "*.mp3")
+        );
+
+        // Displays chooser and copies file to resource folder.
+        try {
+            File sourceFile = fileChooser.showOpenDialog(stage);
+            if (sourceFile == null){
+                return;
+            }
+            Path sourcePath = Path.of(sourceFile.getPath());
+            Path destinationPath = Paths.get("./Music/" + sourceFile.getName());
+            Files.copy(sourcePath, destinationPath);
+
+            onRefreshResourcesClicked();
+        } catch (IOException e){
+            // Todo: inform the user that file can't be imported.
+            e.printStackTrace();
+        }
     }
 
     // Reloads the resource lists.

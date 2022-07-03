@@ -34,8 +34,7 @@ public class TableTopApplication extends Application {
         // Creates a scene by importing the main-view fxml file.
         FXMLLoader fxmlLoader = new FXMLLoader(TableTopApplication.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 640, 480);
-
-        BorderPane root = (BorderPane) scene.getRoot();
+        TabletopController tableTopController = (TabletopController) fxmlLoader.getController();
 
         // Attaches graphicsContext to fxml canvas.
         graphicsContext = ((Canvas) scene.lookup("#previewCanvas")).getGraphicsContext2D();

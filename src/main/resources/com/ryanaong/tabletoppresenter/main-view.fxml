@@ -17,9 +17,9 @@
     <top>
         <MenuBar>
             <Menu text="_File">
-                <MenuItem text="Import foreground"/>
-                <MenuItem text="Import background"/>
-                <MenuItem text="Import music"/>
+                <MenuItem text="Import background" onAction="#onLoadBackground"/>
+                <MenuItem text="Import foreground" onAction="#onLoadForeground"/>
+                <MenuItem text="Import music" onAction="#onLoadMusic"/>
                 <MenuItem text="Reload resources" onAction="#onRefreshResourcesClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
