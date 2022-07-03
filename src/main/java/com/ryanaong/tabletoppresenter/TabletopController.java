@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,6 +18,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 import javafx.stage.*;
 import javafx.util.Duration;
 
@@ -258,6 +260,10 @@ public class TabletopController {
             displayWindow.setTitle("Tabletop Presenter - Audience Display");
 
             StackPane stackPane = new StackPane();
+            stackPane.setPrefHeight(600);
+            stackPane.setPrefWidth(600);
+            stackPane.setMinWidth(600);
+            stackPane.setMaxHeight(600);
 
             displayScene = new Scene(stackPane, 600, 600);
 
@@ -266,6 +272,38 @@ public class TabletopController {
             displayWindow.setMinWidth(300);
             displayWindow.setMinHeight(300);
             displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
+
+            // Canvas and graphics for preview window
+            Canvas previewCanvas = new Canvas(600, 600);
+
+            GraphicsContext previewGraphicsContext = previewCanvas.getGraphicsContext2D();
+            previewGraphicsContext.setFill(Color.BLACK);
+            previewGraphicsContext.fillRect(0, 0, 600, 600);
+
+            stackPane.getChildren().add(previewCanvas);
+
+            ImageView previewBackgroundImageView = new ImageView();
+            previewBackgroundImageView.setFitHeight(600);
+            previewBackgroundImageView.setFitWidth(600);
+            previewBackgroundImageView.setPreserveRatio(true);
+            if (backgroundImage.getImage() != null) {
+                Image previewBackgroundImage = backgroundImage.getImage();
+                System.out.println(backgroundImage.getImage().getUrl());
+                previewBackgroundImageView.setImage(previewBackgroundImage);
+            }
+
+            stackPane.getChildren().add(previewBackgroundImageView);
+
+            ImageView previewForegroundImageView = new ImageView();
+            previewForegroundImageView.setFitHeight(600);
+            previewForegroundImageView.setFitWidth(600);
+            previewForegroundImageView.setPreserveRatio(true);
+            if (foregroundImage.getImage() != null) {
+                Image previewForegroundImage = foregroundImage.getImage();
+                previewForegroundImageView.setImage(previewForegroundImage);
+            }
+
+            stackPane.getChildren().add(previewForegroundImageView);
 
             displayWindow.show();
             
