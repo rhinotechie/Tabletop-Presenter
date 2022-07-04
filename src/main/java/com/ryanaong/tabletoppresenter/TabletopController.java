@@ -189,10 +189,6 @@ public class TabletopController {
         });
     }
 
-    public void setMainStage(Stage mainStage){
-        this.mainStage = mainStage;
-    }
-
     @FXML
     public void onLoadBackground(){
         // FileChooser setup
@@ -325,6 +321,20 @@ public class TabletopController {
             freezePresenterItem.setDisable(false);
             unfreezePresenterItem.setDisable(true);
         }
+    }
+
+    @FXML
+    public void onAboutClicked(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(mainBorderPane.getScene().getWindow());
+        dialog.setTitle("About");
+        dialog.setContentText("Tabletop Presenter by Ryan Ong\n" +
+                "Version 1.0\n" +
+                "https://github.com/rhinotechie/Tabletop-Presenter.git");
+
+        // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.showAndWait();
     }
 
     @FXML

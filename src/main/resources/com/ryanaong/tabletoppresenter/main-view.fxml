@@ -46,7 +46,7 @@
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide"/>
-                <MenuItem text="About"/>
+                <MenuItem text="About" onAction="#onAboutClicked"/>
             </Menu>
         </MenuBar>
     </top>
