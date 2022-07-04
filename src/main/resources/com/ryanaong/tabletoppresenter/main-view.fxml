@@ -45,7 +45,7 @@
                 <MenuItem fx:id="restartMusicItem" text="Restart" disable="true" onAction="#onRestartClicked"/>
             </Menu>
             <Menu text="_Info">
-                <MenuItem text="User's Guide"/>
+                <MenuItem text="User's Guide" onAction="#onUsersGuideClicked"/>
                 <MenuItem text="About" onAction="#onAboutClicked"/>
             </Menu>
         </MenuBar>

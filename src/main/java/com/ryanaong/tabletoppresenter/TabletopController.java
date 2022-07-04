@@ -338,6 +338,26 @@ public class TabletopController {
     }
 
     @FXML
+    public void onUsersGuideClicked(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(mainBorderPane.getScene().getWindow());
+        dialog.setTitle("User's Guide");
+        dialog.setContentText(
+                "Import background/foreground images and music by either using 'File > Import [Resource Type]'" +
+                        "or copy resources directly to the program resource directories.\n\n" +
+                "Select up to one background, one foreground, and music for a scene.\n\n" +
+                "Choose 'Presenter > Start Presentation' to open the presenter window for your secondary monitor.\n\n" +
+                "Selecting a resource updates the live window unless you select 'Presenter > Freeze presentation'.\n\n" +
+                "Save the preview screen's background, foreground and/or music as a scene with 'Scene > Save scene'");
+
+        // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.showAndWait();
+    }
+
+
+
+    @FXML
     public void onEndPresenter(){
         if (displayWindow != null){
             displayWindow.close();
