@@ -29,11 +29,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.*;
-
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.*;
 
 
 
@@ -170,20 +168,28 @@ public class TabletopController {
 
                     String sceneName = sceneList.getSelectionModel().getSelectedItem();
 
-                    // Opens json file and converts the String to a JSONObject.
-                    JSONParser jsonParser = new JSONParser();
                     JSONObject jsonObject;
-                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName)){
-                        Object obj = jsonParser.parse(fileReader);
-                        jsonObject = (JSONObject) obj;
-                    } catch (IOException | ParseException e) {
+                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName); Scanner scanner = new Scanner(fileReader)){
+                        StringBuilder sb = new StringBuilder();
+                        while (scanner.hasNextLine()){
+                            sb.append(scanner.nextLine());
+                        }
+
+                        jsonObject = new JSONObject(sb.toString());
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
 
                     // Selects the scene items from the lists.
-                    backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
-                    foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
-                    musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                    if (jsonObject.has("background")){
+                        backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                    }
+                    if (jsonObject.has("foreground")){
+                        foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                    }
+                    if (jsonObject.has("music")) {
+                        musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                    }
                 }
             }
         });
@@ -284,6 +290,7 @@ public class TabletopController {
             stackPane.setMinHeight(300);
             stackPane.setMaxHeight(Double.POSITIVE_INFINITY);
             stackPane.setMaxWidth(Double.POSITIVE_INFINITY);
+            stackPane.setStyle("-fx-background-color: black");
 
             Scene displayScene = new Scene(stackPane);
             displayScene.setFill(Color.DARKGRAY);
@@ -296,7 +303,6 @@ public class TabletopController {
             liveBackgroundImageView.setPreserveRatio(true);
             if (backgroundImage.getImage() != null) {
                 Image liveBackgroundImage = backgroundImage.getImage();
-                System.out.println(backgroundImage.getImage().getUrl());
                 liveBackgroundImageView.setImage(liveBackgroundImage);
             }
 
@@ -581,7 +587,10 @@ public class TabletopController {
                 System.out.println("File exists");
             } else {
                 FileWriter fileWriter = new FileWriter(newFile.getAbsoluteFile());
-                fileWriter.write(jsonObject.toJSONString());
+                if (jsonObject.toString() == null){
+                    throw new IOException("Could not convert json to String format before writing it to file.");
+                }
+                fileWriter.write(jsonObject.toString());
                 fileWriter.close();
             }
         } catch (IOException e){

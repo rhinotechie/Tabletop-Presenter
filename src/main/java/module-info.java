@@ -10,7 +10,7 @@ module com.ryanaong.tabletoppresenter {
     requires com.almasb.fxgl.all;
     requires java.desktop;
     requires javafx.media;
-    requires json.simple;
+    requires org.json;
 
     opens com.ryanaong.tabletoppresenter to javafx.fxml;
     exports com.ryanaong.tabletoppresenter;
