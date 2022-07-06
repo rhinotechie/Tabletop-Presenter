@@ -421,7 +421,7 @@ public class TabletopController {
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         dialog.setTitle("About");
         dialog.setContentText("Tabletop Presenter by Ryan Ong\n" +
-                "Version 1.0\n" +
+                "Version 1.1\n" +
                 "https://github.com/rhinotechie/Tabletop-Presenter.git");
 
         // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
