@@ -1,17 +1,12 @@
 package com.ryanaong.tabletoppresenter;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,10 +21,7 @@ import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.ParseException;
+import java.nio.file.*;
 import java.util.*;
 import org.json.*;
 
@@ -89,9 +81,15 @@ public class TabletopController {
                         if (liveBackgroundImageView != null && !isFrozen){
                             liveBackgroundImageView.setImage(image);
                         }
-                    } catch (IllegalArgumentException | IOException e) {
-                        // TODO: Alert user that resource couldn't be loaded.
-                        System.out.println(backgroundName);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Background Load Error");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Unable to load background with that name from project resource folder.");
+                        alert.showAndWait();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }
@@ -109,9 +107,15 @@ public class TabletopController {
                         if (liveForegroundImageView != null && !isFrozen){
                             liveForegroundImageView.setImage(image);
                         }
-                    } catch (IllegalArgumentException | IOException e) {
-                        // TODO: Alert user that resource couldn't be loaded.
-                        System.out.println(foregroundName);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Foreground Load Error");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Unable to load foreground with that name from project resource folder.");
+                        alert.showAndWait();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }
@@ -139,9 +143,19 @@ public class TabletopController {
 
                         mediaPlayer.play();
                     } catch (IllegalArgumentException iae){
-                        // TODO: Notify user the URL and invalid
+                        iae.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Music Load Error");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Unable to load music with that name from project resource folder.");
+                        alert.showAndWait();
                     } catch (UnsupportedOperationException | MediaException e){
-                        // TODO: Notify user of unplayable file
+                        e.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Incompatible Music");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Selected music is not compatible with this program.");
+                        alert.showAndWait();
                     }
 
 
@@ -176,19 +190,25 @@ public class TabletopController {
                         }
 
                         jsonObject = new JSONObject(sb.toString());
+                        // Selects the scene items from the lists.
+                        if (jsonObject.has("background")){
+                            backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                        }
+                        if (jsonObject.has("foreground")){
+                            foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                        }
+                        if (jsonObject.has("music")) {
+                            musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                        }
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    // Selects the scene items from the lists.
-                    if (jsonObject.has("background")){
-                        backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
-                    }
-                    if (jsonObject.has("foreground")){
-                        foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
-                    }
-                    if (jsonObject.has("music")) {
-                        musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                        e.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Scene import error");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Unable to load scene from project resource folder.");
+                        alert.showAndWait();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }
@@ -207,7 +227,7 @@ public class TabletopController {
         // Displays chooser and copies file to resource folder.
         try {
             File sourceFile = fileChooser.showOpenDialog(mainStage);
-            if (sourceFile == null){
+            if (sourceFile == null) {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
@@ -215,9 +235,31 @@ public class TabletopController {
             Files.copy(sourcePath, destinationPath);
 
             onRefreshResourcesClicked();
-        } catch (IOException e){
-            // Todo: inform the user that file can't be imported.
-            e.printStackTrace();
+        } catch (AccessDeniedException ade) {
+            ade.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File Access Denied");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "Check the permissions for source and destination and make sure your anti-virus " +
+                    "is not denying access. You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        } catch(FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File exists");
+            alert.setHeaderText(null);
+            alert.setContentText("A file with that name already exists in the resource directory.");
+            alert.showAndWait();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
         }
     }
 
@@ -241,9 +283,31 @@ public class TabletopController {
             Files.copy(sourcePath, destinationPath);
 
             onRefreshResourcesClicked();
-        } catch (IOException e){
-            // Todo: inform the user that file can't be imported.
-            e.printStackTrace();
+        } catch (AccessDeniedException ade) {
+            ade.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File Access Denied");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "Check the permissions for source and destination and make sure your anti-virus " +
+                    "is not denying access. You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        } catch(FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File exists");
+            alert.setHeaderText(null);
+            alert.setContentText("A file with that name already exists in the resource directory.");
+            alert.showAndWait();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
         }
     }
 
@@ -267,9 +331,31 @@ public class TabletopController {
             Files.copy(sourcePath, destinationPath);
 
             onRefreshResourcesClicked();
-        } catch (IOException e){
-            // Todo: inform the user that file can't be imported.
-            e.printStackTrace();
+        } catch (AccessDeniedException ade) {
+            ade.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File Access Denied");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "Check the permissions for source and destination and make sure your anti-virus " +
+                    "is not denying access. You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        } catch(FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File exists");
+            alert.setHeaderText(null);
+            alert.setContentText("A file with that name already exists in the resource directory.");
+            alert.showAndWait();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
         }
     }
 
@@ -424,6 +510,7 @@ public class TabletopController {
         File musicDir = new File("./Music");
         File sceneDir = new File("./Scenes");
 
+
         if (!foregroundDir.mkdir()) {
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
@@ -553,7 +640,11 @@ public class TabletopController {
         // Alert the user that nothing is selected so the scene is not saved.
         if (backgroundList.getSelectionModel().isEmpty() && foregroundList.getSelectionModel().isEmpty() &&
                 musicList.getSelectionModel().isEmpty()){
-            // TODO: Notify user that nothing is selected
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Nothing Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("No resources selected so a scene was not saved.");
+            alert.showAndWait();
             return;
         }
 
@@ -582,19 +673,35 @@ public class TabletopController {
         // Creates a new file and writes the json contents to it.
         try {
             File newFile = new File(".\\Scenes\\" + sceneFileName + ".json");
-            if (!newFile.createNewFile()){
-                //TODO: notify user of existing file
-                System.out.println("File exists");
+            if (!newFile.createNewFile()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("File creation error");
+                alert.setHeaderText(null);
+                alert.setContentText("A scene already exists with that name.");
+                alert.showAndWait();
             } else {
                 FileWriter fileWriter = new FileWriter(newFile.getAbsoluteFile());
-                if (jsonObject.toString() == null){
+                if (jsonObject.toString() == null) {
                     throw new IOException("Could not convert json to String format before writing it to file.");
                 }
                 fileWriter.write(jsonObject.toString());
                 fileWriter.close();
             }
+        } catch (FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File creation error");
+            alert.setHeaderText(null);
+            alert.setContentText("A scene already exists with that name.");
+            alert.showAndWait();
         } catch (IOException e){
-            // TODO: inform user the file couldn't be created
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File creation error");
+            alert.setHeaderText(null);
+            alert.setContentText("Could not create this scene in the project directory.");
+            alert.showAndWait();
+        } catch (Exception e){
+            e.printStackTrace();
         }
 
         onRefreshResourcesClicked();
@@ -610,11 +717,10 @@ public class TabletopController {
 
         try {
             dialog.getDialogPane().setContent(fxmlLoader.load());
-        } catch (IOException e){
-            System.out.println("Dialog unavailable");
-            e.printStackTrace();
-            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
 
         // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
@@ -624,7 +730,7 @@ public class TabletopController {
 
         if (result.isPresent() && result.get() == ButtonType.OK){
             // Grabs the name from the text field and returns it.
-            NewSceneDialogController newSceneDialogController = (NewSceneDialogController) fxmlLoader.getController();
+            NewSceneDialogController newSceneDialogController = fxmlLoader.getController();
             return newSceneDialogController.getSceneName();
         } else {
             return null;
