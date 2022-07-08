@@ -65,6 +65,7 @@ public class TabletopController {
 
 
     public void initialize(){
+        // Ensures project directories are created if they aren't already
         onRefreshResourcesClicked();
 
         // Enables click behavior for item lists.
@@ -73,6 +74,7 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
+                    // Updates preview window with clicked resource
                     String backgroundName = backgroundList.getSelectionModel().getSelectedItem();
                     Image image;
                     try (FileInputStream fileInputStream = new FileInputStream("./Backgrounds/" + backgroundName)) {
@@ -97,6 +99,7 @@ public class TabletopController {
         foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
+            // Updates preview window with clicked resource
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
                     String foregroundName = foregroundList.getSelectionModel().getSelectedItem();
@@ -123,20 +126,19 @@ public class TabletopController {
         musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         musicList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
+            // Plays the selected song
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 != null){
                     if (mediaPlayer != null){
                         mediaPlayer.stop();
                     }
 
-                    // Plays selected music
                     String musicName = musicList.getSelectionModel().getSelectedItem();
-
                     try {
                         Media media = new Media(new File("./Music/" + musicName).toURI().toString());
                         mediaPlayer = new MediaPlayer(media);
 
-                        // Updates media menu
+                        // Updates media menu items
                         startResumeItem.setDisable(true);
                         pauseMusicItem.setDisable(false);
                         restartMusicItem.setDisable(false);
@@ -157,8 +159,6 @@ public class TabletopController {
                         alert.setContentText("Selected music is not compatible with this program.");
                         alert.showAndWait();
                     }
-
-
                 }
             }
         });
@@ -167,7 +167,7 @@ public class TabletopController {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if(t1 != null){
-                    // Clears preview and live images and audio in case a scene has 2 or 1 item.
+                    // Clears preview and live images and audio in case a scene has 1 or 2 items.
                     backgroundImage.setImage(null);
                     foregroundImage.setImage(null);
                     if (liveBackgroundImageView != null && !isFrozen){
@@ -176,12 +176,14 @@ public class TabletopController {
                     if(liveForegroundImageView != null && !isFrozen){
                         liveForegroundImageView.setImage(null);
                     }
+
+                    // Pauses music to decrease likelihood of overlapping soundtracks.
                     if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
                         mediaPlayer.pause();
                     }
 
+                    // Updates background, foreground, and music from selected scene.
                     String sceneName = sceneList.getSelectionModel().getSelectedItem();
-
                     JSONObject jsonObject;
                     try (FileReader fileReader = new FileReader("./Scenes/" + sceneName); Scanner scanner = new Scanner(fileReader)){
                         StringBuilder sb = new StringBuilder();
@@ -189,8 +191,8 @@ public class TabletopController {
                             sb.append(scanner.nextLine());
                         }
 
-                        jsonObject = new JSONObject(sb.toString());
                         // Selects the scene items from the lists.
+                        jsonObject = new JSONObject(sb.toString());
                         if (jsonObject.has("background")){
                             backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
                         }
@@ -216,6 +218,8 @@ public class TabletopController {
     }
 
     @FXML
+    // When the user selects the import background option in the MenuBar, a file chooser opens and the selected file
+    // gets imported into the respective project resource folder.
     public void onLoadBackground(){
         // FileChooser setup
         FileChooser fileChooser = new FileChooser();
@@ -234,6 +238,7 @@ public class TabletopController {
             Path destinationPath = Paths.get("./Backgrounds/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
+            // Refreshes resource so the new file can be seen.
             onRefreshResourcesClicked();
         } catch (AccessDeniedException ade) {
             ade.printStackTrace();
@@ -264,6 +269,8 @@ public class TabletopController {
     }
 
     @FXML
+    // When the user selects the import foreground option in the MenuBar, a file chooser opens and the selected file
+    // gets imported into the respective project resource folder.
     public void onLoadForeground(){
         // FileChooser setup
         FileChooser fileChooser = new FileChooser();
@@ -282,6 +289,7 @@ public class TabletopController {
             Path destinationPath = Paths.get("./Foregrounds/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
+            // Refreshes resource so the new file can be seen.
             onRefreshResourcesClicked();
         } catch (AccessDeniedException ade) {
             ade.printStackTrace();
@@ -311,6 +319,8 @@ public class TabletopController {
         }
     }
 
+    // When the user selects the import music option in the MenuBar, a file chooser opens and the selected file
+    // gets imported into the respective project resource folder.
     @FXML
     public void onLoadMusic(){
         // FileChooser setup
@@ -330,6 +340,7 @@ public class TabletopController {
             Path destinationPath = Paths.get("./Music/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
+            // Refreshes resource so the new file can be seen.
             onRefreshResourcesClicked();
         } catch (AccessDeniedException ade) {
             ade.printStackTrace();
@@ -360,8 +371,11 @@ public class TabletopController {
     }
 
     @FXML
+    // When the user selects the Start Presenter option in the MenuBar, the live window opens and mirrors the preview
+    // window.
     public void onStartPresenter(){
         if (displayWindow == null){
+            // Stage configuration
             displayWindow = new Stage();
             displayWindow.setMinWidth(300);
             displayWindow.setMinHeight(300);
@@ -369,6 +383,7 @@ public class TabletopController {
             displayWindow.setTitle("Tabletop Presenter - Audience Display");
             displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
 
+            // StackPane configuration
             StackPane stackPane = new StackPane();
             stackPane.setPrefHeight(600);
             stackPane.setPrefWidth(600);
@@ -383,6 +398,7 @@ public class TabletopController {
 
             displayWindow.setScene(displayScene);
 
+            // Mirrors preview's background
             liveBackgroundImageView = new ImageView();
             liveBackgroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
             liveBackgroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
@@ -391,9 +407,9 @@ public class TabletopController {
                 Image liveBackgroundImage = backgroundImage.getImage();
                 liveBackgroundImageView.setImage(liveBackgroundImage);
             }
-
             stackPane.getChildren().add(liveBackgroundImageView);
 
+            // Mirrors preview's foreground
             liveForegroundImageView = new ImageView();
             liveForegroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
             liveForegroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
@@ -402,9 +418,9 @@ public class TabletopController {
                 Image liveForegroundImage = foregroundImage.getImage();
                 liveForegroundImageView.setImage(liveForegroundImage);
             }
-
             stackPane.getChildren().add(liveForegroundImageView);
 
+            // Shows window after the mirrored images are loaded
             displayWindow.show();
             
             // Update menu items
@@ -416,6 +432,7 @@ public class TabletopController {
     }
 
     @FXML
+    // When user clicks About item in MenuBar, information about the program is displayed as a dialog.
     public void onAboutClicked(){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
@@ -430,6 +447,7 @@ public class TabletopController {
     }
 
     @FXML
+    // When user clicks About item in MenuBar, a user's guide about the program is displayed as a dialog.
     public void onUsersGuideClicked(){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
@@ -450,6 +468,9 @@ public class TabletopController {
 
 
     @FXML
+    // When the presenter window is open and the user ends the presentation either by closing the window or selecting
+    // the End Presentation option in the MenuBar, the window is closed (if open) and only the Start Presentation option
+    // is enabled in the MenuBar.
     public void onEndPresenter(){
         if (displayWindow != null){
             displayWindow.close();
@@ -464,20 +485,33 @@ public class TabletopController {
     }
 
     @FXML
+    // When the presenter window is open and the user selects Freeze Presentation in the MenuBar, the live window no
+    // longer updates whenever the preview window is updated until it is unfrozen and a frozen status text is displayed.
     public void onFreezePresenter(){
         this.isFrozen = true;
+
+        // Reveals frozen text in the top left corner
         frozenLabel.setVisible(true);
+
+        // Updates MenuBar items
         freezePresenterItem.setDisable(true);
         unfreezePresenterItem.setDisable(false);
     }
 
     @FXML
+    // When the presenter window is open and the user selects Unfreeze Presentation in the MenuBar, the live window
+    // immediately starts mirroring the preview window.
     public void onUnFreezePresenter(){
         this.isFrozen = false;
+
+        // Hides frozen status text
         frozenLabel.setVisible(false);
+
+        // Updates MenuBar items
         freezePresenterItem.setDisable(false);
         unfreezePresenterItem.setDisable(true);
 
+        // Immediately mirrors to what is displayed in the preview window.
         if(liveBackgroundImageView != null){
             liveBackgroundImageView.setImage(backgroundImage.getImage());
         }
@@ -486,15 +520,14 @@ public class TabletopController {
         }
     }
 
-    // Reloads the resource lists.
-    // Re-selects the items that were unselected.
+    // Reloads the resource lists. Re-selects the items that were unselected.
+    // Side-effect: Music refreshed on load
     @FXML
     public void onRefreshResourcesClicked(){
         // Saves previous selections (if any)
         String prevBackground = null;
         String prevForeGround = null;
         String prevMusic = null;
-
         if(!backgroundList.getSelectionModel().isEmpty()){
             prevBackground = backgroundList.getSelectionModel().getSelectedItem();
         }
@@ -510,22 +543,19 @@ public class TabletopController {
         File musicDir = new File("./Music");
         File sceneDir = new File("./Scenes");
 
-
+        // Loads resources or makes empty directories if they don't exist.
         if (!foregroundDir.mkdir()) {
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
         }
-
         if (!backgroundDir.mkdir()) {
             String[] backgrounds = backgroundDir.list();
             backgroundList.getItems().setAll(backgrounds);
         }
-
         if (!musicDir.mkdir()) {
             String[] music = musicDir.list();
             musicList.getItems().setAll(music);
         }
-
         if (!sceneDir.mkdir()) {
             String[] scenes = sceneDir.list();
             sceneList.getItems().setAll(scenes);
