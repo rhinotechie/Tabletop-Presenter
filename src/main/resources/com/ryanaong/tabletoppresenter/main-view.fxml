@@ -56,8 +56,8 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
-                <TitledPane text="Scenes" expanded="false">
-                    <ListView fx:id="sceneList">
+                <TitledPane fx:id="sceneTitlePane" text="Scenes" expanded="false">
+                    <ListView fx:id="sceneList" style="-fx-font-style: italic">
 
                     </ListView>
                 </TitledPane>

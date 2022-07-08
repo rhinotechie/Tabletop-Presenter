@@ -61,6 +61,7 @@ public class TabletopController {
     public Label frozenLabel;
     public StatusBar statusBar;
     public Label musicStatus;
+    public TitledPane sceneTitlePane;
     private Stage mainStage;
     private Stage displayWindow;
     private ImageView liveBackgroundImageView;
