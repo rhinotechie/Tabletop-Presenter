@@ -90,8 +90,10 @@
         </StackPane>
     </right>
     <bottom>
-        <StatusBar>
-
+        <StatusBar fx:id="statusBar" text="Stopped">
+            <rightItems>
+                <Label fx:id="musicStatus" text="No Music"/>
+            </rightItems>
         </StatusBar>
     </bottom>
 </BorderPane>

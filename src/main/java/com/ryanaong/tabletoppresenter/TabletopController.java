@@ -23,6 +23,8 @@ import javafx.util.Duration;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+
+import org.controlsfx.control.StatusBar;
 import org.json.*;
 
 
@@ -57,6 +59,8 @@ public class TabletopController {
     public MenuItem freezePresenterItem;
     public MenuItem unfreezePresenterItem;
     public Label frozenLabel;
+    public StatusBar statusBar;
+    public Label musicStatus;
     private Stage mainStage;
     private Stage displayWindow;
     private ImageView liveBackgroundImageView;
@@ -144,6 +148,7 @@ public class TabletopController {
                         restartMusicItem.setDisable(false);
 
                         mediaPlayer.play();
+                        musicStatus.setText("Music playing");
                     } catch (IllegalArgumentException iae){
                         iae.printStackTrace();
                         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -180,6 +185,7 @@ public class TabletopController {
                     // Pauses music to decrease likelihood of overlapping soundtracks.
                     if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
                         mediaPlayer.pause();
+                        musicStatus.setText("Music stopped");
                     }
 
                     // Updates background, foreground, and music from selected scene.
@@ -372,7 +378,7 @@ public class TabletopController {
 
     @FXML
     // When the user selects the Start Presenter option in the MenuBar, the live window opens and mirrors the preview
-    // window.
+    // window, updates MenuBar items, and updates status bar.
     public void onStartPresenter(){
         if (displayWindow == null){
             // Stage configuration
@@ -428,7 +434,73 @@ public class TabletopController {
             endPresenterItem.setDisable(false);
             freezePresenterItem.setDisable(false);
             unfreezePresenterItem.setDisable(true);
+
+            statusBar.setText("Presenting");
         }
+    }
+
+    @FXML
+    // When the presenter window is open and the user ends the presentation either by closing the window or selecting
+    // the End Presentation option in the MenuBar, the window is closed (if open), only the Start Presentation option
+    // is enabled in the MenuBar, and the StatusBar is updated. Clears frozen status.
+    public void onEndPresenter(){
+        if (displayWindow != null){
+            displayWindow.close();
+            displayWindow = null;
+        }
+
+        // Update menu items
+        startPresenterItem.setDisable(false);
+        endPresenterItem.setDisable(true);
+        freezePresenterItem.setDisable(true);
+        unfreezePresenterItem.setDisable(true);
+
+        // Clears frozen status
+        isFrozen = false;
+        frozenLabel.setVisible(false);
+
+        // Updates status bar
+        statusBar.setText("Stopped");
+    }
+
+    @FXML
+    // When the presenter window is open and the user selects Freeze Presentation in the MenuBar, the live window no
+    // longer updates whenever the preview window is updated until it is unfrozen and a frozen status text is displayed.
+    public void onFreezePresenter(){
+        this.isFrozen = true;
+
+        // Reveals frozen text in the top left corner
+        frozenLabel.setVisible(true);
+
+        // Updates MenuBar items
+        freezePresenterItem.setDisable(true);
+        unfreezePresenterItem.setDisable(false);
+
+        statusBar.setText("Frozen");
+    }
+
+    @FXML
+    // When the presenter window is open and the user selects Unfreeze Presentation in the MenuBar, the live window
+    // immediately starts mirroring the preview window.
+    public void onUnFreezePresenter(){
+        this.isFrozen = false;
+
+        // Hides frozen status text
+        frozenLabel.setVisible(false);
+
+        // Updates MenuBar items
+        freezePresenterItem.setDisable(false);
+        unfreezePresenterItem.setDisable(true);
+
+        // Immediately mirrors to what is displayed in the preview window.
+        if(liveBackgroundImageView != null){
+            liveBackgroundImageView.setImage(backgroundImage.getImage());
+        }
+        if(liveForegroundImageView != null){
+            liveForegroundImageView.setImage(foregroundImage.getImage());
+        }
+
+        statusBar.setText("Presenting");
     }
 
     @FXML
@@ -465,63 +537,8 @@ public class TabletopController {
         dialog.showAndWait();
     }
 
-
-
-    @FXML
-    // When the presenter window is open and the user ends the presentation either by closing the window or selecting
-    // the End Presentation option in the MenuBar, the window is closed (if open) and only the Start Presentation option
-    // is enabled in the MenuBar.
-    public void onEndPresenter(){
-        if (displayWindow != null){
-            displayWindow.close();
-            displayWindow = null;
-        }
-
-        // Update menu items
-        startPresenterItem.setDisable(false);
-        endPresenterItem.setDisable(true);
-        freezePresenterItem.setDisable(true);
-        unfreezePresenterItem.setDisable(true);
-    }
-
-    @FXML
-    // When the presenter window is open and the user selects Freeze Presentation in the MenuBar, the live window no
-    // longer updates whenever the preview window is updated until it is unfrozen and a frozen status text is displayed.
-    public void onFreezePresenter(){
-        this.isFrozen = true;
-
-        // Reveals frozen text in the top left corner
-        frozenLabel.setVisible(true);
-
-        // Updates MenuBar items
-        freezePresenterItem.setDisable(true);
-        unfreezePresenterItem.setDisable(false);
-    }
-
-    @FXML
-    // When the presenter window is open and the user selects Unfreeze Presentation in the MenuBar, the live window
-    // immediately starts mirroring the preview window.
-    public void onUnFreezePresenter(){
-        this.isFrozen = false;
-
-        // Hides frozen status text
-        frozenLabel.setVisible(false);
-
-        // Updates MenuBar items
-        freezePresenterItem.setDisable(false);
-        unfreezePresenterItem.setDisable(true);
-
-        // Immediately mirrors to what is displayed in the preview window.
-        if(liveBackgroundImageView != null){
-            liveBackgroundImageView.setImage(backgroundImage.getImage());
-        }
-        if(liveForegroundImageView != null){
-            liveForegroundImageView.setImage(foregroundImage.getImage());
-        }
-    }
-
     // Reloads the resource lists. Re-selects the items that were unselected.
-    // Side-effect: Music refreshed on load
+    // Side-effect: Music restarts on load
     @FXML
     public void onRefreshResourcesClicked(){
         // Saves previous selections (if any)
@@ -542,6 +559,8 @@ public class TabletopController {
         File backgroundDir = new File("./Backgrounds");
         File musicDir = new File("./Music");
         File sceneDir = new File("./Scenes");
+
+        musicStatus.setText("Music stopped");
 
         // Loads resources or makes empty directories if they don't exist.
         if (!foregroundDir.mkdir()) {
@@ -630,6 +649,7 @@ public class TabletopController {
                 restartMusicItem.setDisable(false);
 
                 mediaPlayer.play();
+                musicStatus.setText("Music playing");
             }
         }
     }
@@ -645,6 +665,7 @@ public class TabletopController {
                 restartMusicItem.setDisable(false);
 
                 mediaPlayer.pause();
+                musicStatus.setText("Music stopped");
             }
         }
     }
@@ -661,6 +682,7 @@ public class TabletopController {
 
                 mediaPlayer.seek(Duration.ZERO);
                 mediaPlayer.play();
+                musicStatus.setText("Music playing");
             }
         }
     }
