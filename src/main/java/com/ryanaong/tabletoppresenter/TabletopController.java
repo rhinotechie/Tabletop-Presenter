@@ -186,6 +186,11 @@ public class TabletopController {
                         liveForegroundImageView.setImage(null);
                     }
 
+                    // Deselects all normal resource names to be reselected later
+                    backgroundList.getSelectionModel().clearSelection();
+                    foregroundList.getSelectionModel().clearSelection();
+                    musicList.getSelectionModel().clearSelection();
+
                     // Pauses music to decrease likelihood of overlapping soundtracks.
                     if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
                         mediaPlayer.pause();
@@ -795,6 +800,9 @@ public class TabletopController {
 
     @FXML
     public void onExitClicked(){
+        if (displayWindow != null){
+            displayWindow.close();
+        }
         Platform.exit();
     }
 }
