@@ -14,7 +14,15 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.control.Label?>
-<BorderPane fx:id="mainBorderPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.ryanaong.tabletoppresenter.TabletopController">
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<BorderPane fx:id="mainBorderPane" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ryanaong.tabletoppresenter.TabletopController">
     <top>
         <MenuBar>
             <Menu text="_File">
@@ -80,19 +88,36 @@
         </ScrollPane>
     </center>
     <right>
-        <StackPane prefWidth="300" prefHeight="300" maxWidth="300" maxHeight="300" BorderPane.alignment="TOP_CENTER">
-            <Canvas fx:id="previewCanvas" width="300" height="300" StackPane.alignment="TOP_CENTER"/>
-            <ImageView fx:id="backgroundImage" fitHeight="300" fitWidth="300" preserveRatio="true" StackPane.alignment="CENTER"/>
-            <ImageView fx:id="foregroundImage" fitHeight="300" fitWidth="300" preserveRatio="true" StackPane.alignment="CENTER"/>
-            <Label fx:id="frozenLabel" text="FROZEN" visible="false"
-                   style="-fx-font: 18px Arial; -fx-text-fill: blue; -fx-font-weight: bold;"
-                   StackPane.alignment="TOP_LEFT"/>
-        </StackPane>
+        <VBox>
+            <StackPane prefWidth="400" prefHeight="400" maxWidth="400" maxHeight="400">
+                <Canvas fx:id="previewCanvas" width="400" height="400" StackPane.alignment="TOP_CENTER"/>
+                <ImageView fx:id="backgroundImage" fitHeight="400" fitWidth="400" preserveRatio="true" StackPane.alignment="CENTER"/>
+                <ImageView fx:id="foregroundImage" fitHeight="400" fitWidth="400" preserveRatio="true" StackPane.alignment="CENTER"/>
+                <Label fx:id="frozenLabel" text="FROZEN" visible="false"
+                       style="-fx-font: 18px Arial; -fx-text-fill: blue; -fx-font-weight: bold;"
+                       StackPane.alignment="TOP_LEFT"/>
+            </StackPane>
+            <GridPane hgap="10" vgap="15" maxWidth="400" maxHeight="Infinity">
+                <rowConstraints>
+                    <RowConstraints valignment="CENTER" />
+                </rowConstraints>
+                <padding>
+                    <Insets top="10" bottom="10" left="10" right="10" />
+                </padding>
+                <Label text="Display color: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <ColorPicker fx:id="colorPicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Background stretch:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <CheckBox fx:id="stretchBackgroundCheckBox" GridPane.rowIndex="0" GridPane.columnIndex="3" GridPane.halignment="RIGHT"/>
+                <Label text="Foreground scale: " GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="LEFT"/>
+                <Slider fx:id="foregroundScaleSlider" GridPane.rowIndex="1" GridPane.columnIndex="2" GridPane.columnSpan="2"/>
+
+            </GridPane>
+        </VBox>
     </right>
     <bottom>
-        <StatusBar fx:id="statusBar" text="Stopped">
+        <StatusBar fx:id="statusBar" text="Music stopped">
             <rightItems>
-                <Label fx:id="musicStatus" text="No Music"/>
+                <Label fx:id="presenterStatus" text="Not presenting"/>
             </rightItems>
         </StatusBar>
     </bottom>

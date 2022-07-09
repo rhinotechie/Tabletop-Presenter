@@ -60,8 +60,11 @@ public class TabletopController {
     public MenuItem unfreezePresenterItem;
     public Label frozenLabel;
     public StatusBar statusBar;
-    public Label musicStatus;
     public TitledPane sceneTitlePane;
+    public Label presenterStatus;
+    public CheckBox stretchBackgroundCheckBox;
+    public Slider foregroundScaleSlider;
+    public ColorPicker colorPicker;
     private Stage mainStage;
     private Stage displayWindow;
     private ImageView liveBackgroundImageView;
@@ -149,7 +152,7 @@ public class TabletopController {
                         restartMusicItem.setDisable(false);
 
                         mediaPlayer.play();
-                        musicStatus.setText("Music playing");
+                        statusBar.setText("Music playing");
                     } catch (IllegalArgumentException iae){
                         iae.printStackTrace();
                         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -186,7 +189,7 @@ public class TabletopController {
                     // Pauses music to decrease likelihood of overlapping soundtracks.
                     if (mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING){
                         mediaPlayer.pause();
-                        musicStatus.setText("Music stopped");
+                        statusBar.setText("Music stopped");
                     }
 
                     // Updates background, foreground, and music from selected scene.
@@ -436,7 +439,7 @@ public class TabletopController {
             freezePresenterItem.setDisable(false);
             unfreezePresenterItem.setDisable(true);
 
-            statusBar.setText("Presenting");
+            presenterStatus.setText("Presenting");
         }
     }
 
@@ -461,7 +464,7 @@ public class TabletopController {
         frozenLabel.setVisible(false);
 
         // Updates status bar
-        statusBar.setText("Stopped");
+        presenterStatus.setText("Not presenting");
     }
 
     @FXML
@@ -477,7 +480,7 @@ public class TabletopController {
         freezePresenterItem.setDisable(true);
         unfreezePresenterItem.setDisable(false);
 
-        statusBar.setText("Frozen");
+        presenterStatus.setText("Presenter frozen");
     }
 
     @FXML
@@ -501,7 +504,7 @@ public class TabletopController {
             liveForegroundImageView.setImage(foregroundImage.getImage());
         }
 
-        statusBar.setText("Presenting");
+        presenterStatus.setText("Presenting");
     }
 
     @FXML
@@ -561,7 +564,7 @@ public class TabletopController {
         File musicDir = new File("./Music");
         File sceneDir = new File("./Scenes");
 
-        musicStatus.setText("Music stopped");
+        statusBar.setText("Music stopped");
 
         // Loads resources or makes empty directories if they don't exist.
         if (!foregroundDir.mkdir()) {
@@ -650,7 +653,7 @@ public class TabletopController {
                 restartMusicItem.setDisable(false);
 
                 mediaPlayer.play();
-                musicStatus.setText("Music playing");
+                statusBar.setText("Music playing");
             }
         }
     }
@@ -666,7 +669,7 @@ public class TabletopController {
                 restartMusicItem.setDisable(false);
 
                 mediaPlayer.pause();
-                musicStatus.setText("Music stopped");
+                statusBar.setText("Music stopped");
             }
         }
     }
@@ -683,7 +686,7 @@ public class TabletopController {
 
                 mediaPlayer.seek(Duration.ZERO);
                 mediaPlayer.play();
-                musicStatus.setText("Music playing");
+                statusBar.setText("Music playing");
             }
         }
     }
