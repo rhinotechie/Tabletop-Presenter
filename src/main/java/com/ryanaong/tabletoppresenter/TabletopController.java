@@ -3,10 +3,13 @@ package com.ryanaong.tabletoppresenter;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -232,8 +235,25 @@ public class TabletopController {
         });
         foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
+            // Changes foreground scale of live/preview windows
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
                 onRatioSliderChanged();
+            }
+        });
+        colorPicker.setValue(Color.GRAY);
+        colorPicker.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            // Changes background color of live/preview windows
+            public void handle(ActionEvent actionEvent) {
+                if (colorPicker.getValue() != null) {
+                    GraphicsContext gc = previewCanvas.getGraphicsContext2D();
+                    gc.setFill(colorPicker.getValue());
+                    gc.fillRect(0, 0, 400, 400);
+
+                    if (displayWindow != null){
+                        displayWindow.getScene().setFill(colorPicker.getValue());
+                    }
+                }
             }
         });
     }
@@ -434,10 +454,14 @@ public class TabletopController {
             stackPane.setMinHeight(300);
             stackPane.setMaxHeight(Double.POSITIVE_INFINITY);
             stackPane.setMaxWidth(Double.POSITIVE_INFINITY);
-            stackPane.setStyle("-fx-background-color: black");
+            stackPane.setStyle("-fx-background-color: transparent");
 
             Scene displayScene = new Scene(stackPane);
-            displayScene.setFill(Color.DARKGRAY);
+
+            // Mirrors preview's background color
+            if (colorPicker.getValue() != null){
+                displayScene.setFill(colorPicker.getValue());
+            }
 
             displayWindow.setScene(displayScene);
 
@@ -452,8 +476,11 @@ public class TabletopController {
                 // Determine whether to stretch or keep image ratio.
                 if (stretchBackgroundCheckBox.isSelected()){
                     liveBackgroundImageView.setPreserveRatio(false);
+                } else {
+                    liveBackgroundImageView.setPreserveRatio(true);
                 }
             }
+
             stackPane.getChildren().add(liveBackgroundImageView);
 
             // Mirrors preview's foreground
