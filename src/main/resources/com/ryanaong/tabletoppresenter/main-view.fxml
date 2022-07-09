@@ -107,10 +107,9 @@
                 <Label text="Display color: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <ColorPicker fx:id="colorPicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                 <Label text="Background stretch:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                <CheckBox fx:id="stretchBackgroundCheckBox" GridPane.rowIndex="0" GridPane.columnIndex="3" GridPane.halignment="RIGHT"/>
+                <CheckBox fx:id="stretchBackgroundCheckBox" onAction="#onStretchClicked" GridPane.rowIndex="0" GridPane.columnIndex="3" GridPane.halignment="RIGHT"/>
                 <Label text="Foreground scale: " GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="LEFT"/>
                 <Slider fx:id="foregroundScaleSlider" GridPane.rowIndex="1" GridPane.columnIndex="2" GridPane.columnSpan="2"/>
-
             </GridPane>
         </VBox>
     </right>

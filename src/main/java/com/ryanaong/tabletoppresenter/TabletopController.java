@@ -233,6 +233,15 @@ public class TabletopController {
     }
 
     @FXML
+    // Toggle stretch/non-stretched backgrounds for preview and live windows.
+    public void onStretchClicked(){
+        backgroundImage.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+        if (liveBackgroundImageView != null && !isFrozen){
+            liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+        }
+    }
+
+    @FXML
     // When the user selects the import background option in the MenuBar, a file chooser opens and the selected file
     // gets imported into the respective project resource folder.
     public void onLoadBackground(){
@@ -417,10 +426,14 @@ public class TabletopController {
             liveBackgroundImageView = new ImageView();
             liveBackgroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
             liveBackgroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
-            liveBackgroundImageView.setPreserveRatio(true);
             if (backgroundImage.getImage() != null) {
                 Image liveBackgroundImage = backgroundImage.getImage();
                 liveBackgroundImageView.setImage(liveBackgroundImage);
+
+                // Determine whether to stretch or keep image ratio.
+                if (stretchBackgroundCheckBox.isSelected()){
+                    liveBackgroundImageView.setPreserveRatio(false);
+                }
             }
             stackPane.getChildren().add(liveBackgroundImageView);
 
