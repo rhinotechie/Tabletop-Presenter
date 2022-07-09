@@ -230,6 +230,12 @@ public class TabletopController {
                 }
             }
         });
+        foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                onRatioSliderChanged();
+            }
+        });
     }
 
     @FXML
@@ -238,6 +244,19 @@ public class TabletopController {
         backgroundImage.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
         if (liveBackgroundImageView != null && !isFrozen){
             liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+        }
+    }
+
+    @FXML
+    // Changes scale of foreground image according to slider
+    public void onRatioSliderChanged(){
+        if (foregroundImage != null){
+            foregroundImage.setScaleX(foregroundScaleSlider.getValue());
+            foregroundImage.setScaleY(foregroundScaleSlider.getValue());
+        }
+        if (liveForegroundImageView != null && !isFrozen){
+            liveForegroundImageView.setScaleX(foregroundScaleSlider.getValue());
+            liveForegroundImageView.setScaleY(foregroundScaleSlider.getValue());
         }
     }
 
@@ -445,6 +464,8 @@ public class TabletopController {
             if (foregroundImage.getImage() != null) {
                 Image liveForegroundImage = foregroundImage.getImage();
                 liveForegroundImageView.setImage(liveForegroundImage);
+                liveForegroundImageView.setScaleX(foregroundScaleSlider.getValue());
+                liveForegroundImageView.setScaleY(foregroundScaleSlider.getValue());
             }
             stackPane.getChildren().add(liveForegroundImageView);
 
@@ -514,12 +535,15 @@ public class TabletopController {
         freezePresenterItem.setDisable(false);
         unfreezePresenterItem.setDisable(true);
 
-        // Immediately mirrors to what is displayed in the preview window.
+        // Immediately mirrors to what is displayed in the preview window including ratio and foreground scale.
         if(liveBackgroundImageView != null){
             liveBackgroundImageView.setImage(backgroundImage.getImage());
+            liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
         }
         if(liveForegroundImageView != null){
             liveForegroundImageView.setImage(foregroundImage.getImage());
+            liveForegroundImageView.setScaleX(foregroundScaleSlider.getValue());
+            liveForegroundImageView.setScaleY(foregroundScaleSlider.getValue());
         }
 
         presenterStatus.setText("Presenting");
