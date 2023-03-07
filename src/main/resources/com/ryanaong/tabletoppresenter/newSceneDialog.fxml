@@ -1,8 +1,6 @@
 <?import javafx.scene.control.DialogPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.VBox?>
 <DialogPane fx:controller="com.ryanaong.tabletoppresenter.NewSceneDialogController"
             xmlns:fx="http://javafx.com/fxml">

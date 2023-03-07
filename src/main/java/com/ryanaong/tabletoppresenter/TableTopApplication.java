@@ -15,16 +15,10 @@ public class TableTopApplication extends Application {
     private GraphicsContext graphicsContext;
 
     @Override
-    public void init() throws Exception {
-        super.init();
-    }
-
-    @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage mainStage) throws IOException {
         // Creates a scene by importing the main-view fxml file.
         FXMLLoader fxmlLoader = new FXMLLoader(TableTopApplication.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 800, 540);
-        TabletopController tableTopController = (TabletopController) fxmlLoader.getController();
 
         // Attaches graphicsContext to fxml canvas.
         graphicsContext = ((Canvas) scene.lookup("#previewCanvas")).getGraphicsContext2D();
@@ -34,20 +28,15 @@ public class TableTopApplication extends Application {
         graphicsContext.setFill(Color.GRAY);
         graphicsContext.fillRect(0, 0, 400, 400);
 
-        // Configures the current stage window
-        stage.setTitle("Tabletop Presenter");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.show();
+        // Configures the application window
+        mainStage.setTitle("Tabletop Presenter");
+        mainStage.setScene(scene);
+        mainStage.setResizable(false);
+        mainStage.show();
     }
 
     public static void main(String[] args) {
         launch();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        super.stop();
     }
 
     public GraphicsContext getGraphicsContext() {
