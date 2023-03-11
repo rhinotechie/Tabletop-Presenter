@@ -15,9 +15,6 @@ import java.net.URL;
 import java.util.Objects;
 
 public class TableTopApplication extends Application {
-
-    private GraphicsContext graphicsContext;
-
     @Override
     public void start(Stage mainStage) throws IOException {
         // Locate the layout file for the mainStage's scene.
@@ -31,10 +28,9 @@ public class TableTopApplication extends Application {
         Parent parent = FXMLLoader.load(url);
         Scene scene = new Scene(parent, 800, 540);
 
-        // Attaches graphicsContext to fxml canvas.
-        graphicsContext = ((Canvas) scene.lookup("#previewCanvas")).getGraphicsContext2D();
-
         // Draws initial content in preview canvas.
+        Canvas canvas = (Canvas) scene.lookup("#previewCanvas");
+        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setStroke(Color.BLACK);
         graphicsContext.setFill(Color.GRAY);
         graphicsContext.fillRect(0, 0, 400, 400);
@@ -48,9 +44,5 @@ public class TableTopApplication extends Application {
 
     public static void main(String[] args) {
         launch();
-    }
-
-    public GraphicsContext getGraphicsContext() {
-        return graphicsContext;
     }
 }

@@ -23,7 +23,6 @@ import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
-import javafx.util.Duration;
 
 import java.io.*;
 import java.nio.file.*;
@@ -36,46 +35,60 @@ import org.json.*;
 
 public class TabletopController {
     @FXML
-    public ListView<String> sceneList;
+    private ListView<String> sceneList;
     @FXML
-    public ListView<String> foregroundList;
+    private ListView<String> foregroundList;
     @FXML
-    public ListView<String> backgroundList;
+    private ListView<String> backgroundList;
     @FXML
-    public ListView<String> musicList;
+    private ListView<String> musicList;
     @FXML
-    public Canvas previewCanvas;
+    private Canvas previewCanvas;
     @FXML
-    public ImageView backgroundImage;
+    private ImageView backgroundImage;
     @FXML
-    public ImageView foregroundImage;
+    private ImageView foregroundImage;
     @FXML
-    public MenuItem startMusicItem;
+    private MenuItem startMusicItem;
     @FXML
-    public MenuItem pauseMusicItem;
+    private MenuItem pauseMusicItem;
     @FXML
-    public MenuItem stopMusicItem;
+    private MenuItem stopMusicItem;
     @FXML
-    public BorderPane mainBorderPane;
-
-    public MediaPlayer mediaPlayer;
-    public MenuItem startPresenterItem;
-    public MenuItem endPresenterItem;
-    public MenuItem freezePresenterItem;
-    public MenuItem unfreezePresenterItem;
-    public Label frozenLabel;
-    public StatusBar statusBar;
-    public TitledPane sceneTitlePane;
-    public Label presenterStatus;
-    public CheckBox stretchBackgroundCheckBox;
-    public Slider foregroundScaleSlider;
-    public ColorPicker colorPicker;
-    public MenuItem restartMusicItemItem;
-    public MenuItem resumeMusicItem;
-    private Stage mainStage;
+    private BorderPane mainBorderPane;
+    @FXML
+    private MediaPlayer mediaPlayer;
+    @FXML
+    private MenuItem startPresenterItem;
+    @FXML
+    private MenuItem endPresenterItem;
+    @FXML
+    private MenuItem freezePresenterItem;
+    @FXML
+    private MenuItem unfreezePresenterItem;
+    @FXML
+    private Label frozenLabel;
+    @FXML
+    private StatusBar statusBar;
+    @FXML
+    private Label presenterStatus;
+    @FXML
+    private CheckBox stretchBackgroundCheckBox;
+    @FXML
+    private Slider foregroundScaleSlider;
+    @FXML
+    private ColorPicker colorPicker;
+    @FXML
+    private MenuItem resumeMusicItem;
+    @FXML
+    private Stage mainStage; //TODO: When does this get assigned?
+    @FXML
     private Stage displayWindow;
+    @FXML
     private ImageView liveBackgroundImageView;
+    @FXML
     private ImageView liveForegroundImageView;
+    @FXML
     private boolean isFrozen = false;
 
     public void initialize(){
@@ -118,10 +131,12 @@ public class TabletopController {
         backgroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+            // TODO: Open a context menu for item deletion.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
                     onDeleteResource("Backgrounds");
                 }
+                mouseEvent.consume();
             }
         });
         foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -163,6 +178,7 @@ public class TabletopController {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
                     onDeleteResource("Foregrounds");
                 }
+                mouseEvent.consume();
             }
         });
         musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -173,6 +189,7 @@ public class TabletopController {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
                     onDeleteResource("Music");
                 }
+                mouseEvent.consume();
             }
         });
         sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -237,6 +254,7 @@ public class TabletopController {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
                     onDeleteResource("Scenes");
                 }
+                mouseEvent.consume();
             }
         });
         foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
@@ -260,6 +278,7 @@ public class TabletopController {
                         displayWindow.getScene().setFill(colorPicker.getValue());
                     }
                 }
+                actionEvent.consume();
             }
         });
     }

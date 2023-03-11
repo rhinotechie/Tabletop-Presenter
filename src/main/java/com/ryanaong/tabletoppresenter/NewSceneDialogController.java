@@ -5,7 +5,7 @@ import javafx.scene.control.TextField;
 
 public class NewSceneDialogController {
     @FXML
-    public TextField sceneTextField;
+    private TextField sceneTextField;
 
     public String getSceneName(){
         return sceneTextField.getText().trim();

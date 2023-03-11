@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.Menu?>
@@ -20,7 +20,9 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.layout.RowConstraints?>
-<BorderPane fx:id="mainBorderPane" xmlns:fx="http://javafx.com/fxml"
+
+<BorderPane fx:id="mainBorderPane"
+            xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ryanaong.tabletoppresenter.TabletopController">
     <top>
         <MenuBar>
