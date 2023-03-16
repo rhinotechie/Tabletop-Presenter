@@ -15,18 +15,24 @@ import java.net.URL;
 import java.util.Objects;
 
 public class TableTopApplication extends Application {
+    public static void main(String[] args) {
+        Application.launch();
+    }
+
     @Override
     public void start(Stage mainStage) throws IOException {
-        // Locate the layout file for the mainStage's scene.
+        // Imports the layout file for the mainStage's scene.
         URL url = getClass().getResource("mainScene.fxml");
         if (Objects.isNull(url)){
             Platform.exit();
             return;
         }
-
-        // Imports the main-view fxml file and sets it as the scene's main parent node.
-        Parent parent = FXMLLoader.load(url);
+        FXMLLoader loader = new FXMLLoader(url);
+        Parent parent = loader.load();
         Scene scene = new Scene(parent, 800, 540);
+
+        TabletopController tabletopController = loader.getController();
+        tabletopController.setHostingStage(mainStage);
 
         // Draws initial content in preview canvas.
         Canvas canvas = (Canvas) scene.lookup("#previewCanvas");
@@ -40,9 +46,5 @@ public class TableTopApplication extends Application {
         mainStage.setScene(scene);
         mainStage.setResizable(false);
         mainStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }

@@ -2,6 +2,7 @@ package com.ryanaong.tabletoppresenter;
 
 import javafx.scene.canvas.Canvas;
 
+// The presenter window that's resizable
 public class PreviewCanvas extends Canvas {
     public PreviewCanvas(double v, double v1) {
         super(v, v1);
@@ -36,6 +37,5 @@ public class PreviewCanvas extends Canvas {
     public void resize(double v, double v1) {
         super.setWidth(v);
         super.setHeight(v1);
-
     }
 }

@@ -32,8 +32,17 @@ import org.controlsfx.control.StatusBar;
 import org.json.*;
 
 
-
+// Controller class for the TableTopApplication
 public class TabletopController {
+    private boolean isFrozen = false;
+    private Stage hostingStage;
+    public void setHostingStage(Stage hostingStage) {
+        this.hostingStage = hostingStage;
+    }
+
+
+
+    // Data
     @FXML
     private ListView<String> sceneList;
     @FXML
@@ -42,12 +51,18 @@ public class TabletopController {
     private ListView<String> backgroundList;
     @FXML
     private ListView<String> musicList;
+
+    // Canvas
     @FXML
     private Canvas previewCanvas;
     @FXML
     private ImageView backgroundImage;
     @FXML
     private ImageView foregroundImage;
+    @FXML
+    private Label frozenLabel;
+
+    // Menus
     @FXML
     private MenuItem startMusicItem;
     @FXML
@@ -56,8 +71,7 @@ public class TabletopController {
     private MenuItem stopMusicItem;
     @FXML
     private BorderPane mainBorderPane;
-    @FXML
-    private MediaPlayer mediaPlayer;
+
     @FXML
     private MenuItem startPresenterItem;
     @FXML
@@ -67,29 +81,36 @@ public class TabletopController {
     @FXML
     private MenuItem unfreezePresenterItem;
     @FXML
-    private Label frozenLabel;
+    private MenuItem resumeMusicItem;
+
+    // Status bar
     @FXML
     private StatusBar statusBar;
     @FXML
     private Label presenterStatus;
+
+    // UI Controls for tweaking appearance of live stage.
     @FXML
     private CheckBox stretchBackgroundCheckBox;
     @FXML
     private Slider foregroundScaleSlider;
     @FXML
     private ColorPicker colorPicker;
+
+    // Window (Stage) that's to be visible to the audience
     @FXML
-    private MenuItem resumeMusicItem;
-    @FXML
-    private Stage mainStage; //TODO: When does this get assigned?
-    @FXML
-    private Stage displayWindow;
+    private Stage liveStage;
     @FXML
     private ImageView liveBackgroundImageView;
     @FXML
     private ImageView liveForegroundImageView;
+
+    // Media
     @FXML
-    private boolean isFrozen = false;
+    private MediaPlayer mediaPlayer;
+
+
+
 
     public void initialize(){
         // Ensures project directories are created if they aren't already
@@ -274,8 +295,8 @@ public class TabletopController {
                     gc.setFill(colorPicker.getValue());
                     gc.fillRect(0, 0, 400, 400);
 
-                    if (displayWindow != null){
-                        displayWindow.getScene().setFill(colorPicker.getValue());
+                    if (liveStage != null){
+                        liveStage.getScene().setFill(colorPicker.getValue());
                     }
                 }
                 actionEvent.consume();
@@ -318,7 +339,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(mainStage);
+            File sourceFile = fileChooser.showOpenDialog(hostingStage);
             if (sourceFile == null) {
                 return;
             }
@@ -369,7 +390,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(mainStage);
+            File sourceFile = fileChooser.showOpenDialog(hostingStage);
             if (sourceFile == null){
                 return;
             }
@@ -420,7 +441,7 @@ public class TabletopController {
 
         // Displays chooser and copies file to resource folder.
         try {
-            File sourceFile = fileChooser.showOpenDialog(mainStage);
+            File sourceFile = fileChooser.showOpenDialog(hostingStage);
             if (sourceFile == null){
                 return;
             }
@@ -462,14 +483,20 @@ public class TabletopController {
     // When the user selects the Start Presenter option in the MenuBar, the live window opens and mirrors the preview
     // window, updates MenuBar items, and updates status bar.
     public void onStartPresenter(){
-        if (displayWindow == null){
+        if (liveStage == null){
             // Stage configuration
-            displayWindow = new Stage();
-            displayWindow.setMinWidth(300);
-            displayWindow.setMinHeight(300);
-            displayWindow.initModality(Modality.NONE);
-            displayWindow.setTitle("Tabletop Presenter - Audience Display");
-            displayWindow.setOnCloseRequest(windowEvent -> onEndPresenter());
+            liveStage = new Stage();
+            liveStage.initOwner(hostingStage);
+            liveStage.setMinWidth(300);
+            liveStage.setMinHeight(300);
+            liveStage.initModality(Modality.NONE);
+            liveStage.setTitle("Tabletop Presenter - Audience Display");
+            liveStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent windowEvent) {
+                    TabletopController.this.onEndPresenter();
+                }
+            });
 
             // StackPane configuration
             StackPane stackPane = new StackPane();
@@ -488,12 +515,12 @@ public class TabletopController {
                 displayScene.setFill(colorPicker.getValue());
             }
 
-            displayWindow.setScene(displayScene);
+            liveStage.setScene(displayScene);
 
             // Mirrors preview's background
             liveBackgroundImageView = new ImageView();
-            liveBackgroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
-            liveBackgroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
+            liveBackgroundImageView.fitWidthProperty().bind(liveStage.widthProperty());
+            liveBackgroundImageView.fitHeightProperty().bind(liveStage.heightProperty());
             if (backgroundImage.getImage() != null) {
                 Image liveBackgroundImage = backgroundImage.getImage();
                 liveBackgroundImageView.setImage(liveBackgroundImage);
@@ -506,8 +533,8 @@ public class TabletopController {
 
             // Mirrors preview's foreground
             liveForegroundImageView = new ImageView();
-            liveForegroundImageView.fitWidthProperty().bind(displayWindow.widthProperty());
-            liveForegroundImageView.fitHeightProperty().bind(displayWindow.heightProperty());
+            liveForegroundImageView.fitWidthProperty().bind(liveStage.widthProperty());
+            liveForegroundImageView.fitHeightProperty().bind(liveStage.heightProperty());
             liveForegroundImageView.setPreserveRatio(true);
             if (foregroundImage.getImage() != null) {
                 Image liveForegroundImage = foregroundImage.getImage();
@@ -518,7 +545,7 @@ public class TabletopController {
             stackPane.getChildren().add(liveForegroundImageView);
 
             // Shows window after the mirrored images are loaded
-            displayWindow.show();
+            liveStage.show();
             
             // Update menu items
             startPresenterItem.setDisable(true);
@@ -535,9 +562,9 @@ public class TabletopController {
     // the End Presentation option in the MenuBar, the window is closed (if open), only the Start Presentation option
     // is enabled in the MenuBar, and the StatusBar is updated. Clears frozen status.
     public void onEndPresenter(){
-        if (displayWindow != null){
-            displayWindow.close();
-            displayWindow = null;
+        if (liveStage != null){
+            liveStage.close();
+            liveStage = null;
         }
 
         // Update menu items
@@ -1106,11 +1133,9 @@ public class TabletopController {
         }
     }
 
+    // Closes application when menu Exit option is clicked.
     @FXML
     public void onExitClicked(){
-        if (displayWindow != null){
-            displayWindow.close();
-        }
         Platform.exit();
     }
 }
