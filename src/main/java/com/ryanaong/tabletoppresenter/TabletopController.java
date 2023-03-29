@@ -1,6 +1,7 @@
 package com.ryanaong.tabletoppresenter;
 
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -44,7 +45,7 @@ public class TabletopController implements Initializable {
         BACKGROUND ("Backgrounds"),
         FOREGROUND ("Foregrounds"),
         MUSIC ("Music"),
-        AMBIANCE ("Ambiance"),
+        AMBIANCE ("Ambiances"),
         SOUND_EFFECT ("Sound Effects");
 
         private final String directoryName;
@@ -57,7 +58,7 @@ public class TabletopController implements Initializable {
     // Only the sound-related resources
     enum SoundType {
         MUSIC ("Music"),
-        AMBIANCE ("Ambiance"),
+        AMBIANCE ("Ambiances"),
         SOUND_EFFECT("Sound Effects");
 
         private final String directoryName;
@@ -132,8 +133,21 @@ public class TabletopController implements Initializable {
     private MenuItem resumeMusicItem;
 
     // Status bar
+
     @FXML
     private StatusBar statusBar;
+    @FXML
+    private Label musicLabel;
+    @FXML
+    private Slider musicSlider;
+    @FXML
+    private Label ambianceLabel;
+    @FXML
+    private Slider ambianceSlider;
+    @FXML
+    private Label soundEffectLabel;
+    @FXML
+    private Slider soundEffectSlider;
     @FXML
     private Label presenterStatus;
 
@@ -164,246 +178,274 @@ public class TabletopController implements Initializable {
         onRefreshResourcesClicked();
 
         // Enables click behavior for item lists.
-        
-        sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if(t1 != null){
-                    // Clears preview images, live images, and audio.
-                    backgroundImage.setImage(null);
-                    foregroundImage.setImage(null);
-                    if (liveBackgroundImageView != null && !isFrozen){
-                        liveBackgroundImageView.setImage(null);
-                    }
-                    if(liveForegroundImageView != null && !isFrozen){
-                        liveForegroundImageView.setImage(null);
-                    }
-
-                    clearMediaPlayer(SoundType.MUSIC);
-                    clearMediaPlayer(SoundType.AMBIANCE);
-                    clearMediaPlayer(SoundType.SOUND_EFFECT);
-
-                    // Deselects all normal resource names to be reselected later
-                    backgroundList.getSelectionModel().clearSelection();
-                    foregroundList.getSelectionModel().clearSelection();
-                    musicList.getSelectionModel().clearSelection();
-                    ambianceList.getSelectionModel().clearSelection();
-                    soundEffectList.getSelectionModel().clearSelection();
-
-                    // Updates background, foreground, and sounds from selected scene.
-
-                    String sceneName = sceneList.getSelectionModel().getSelectedItem();
-                    JSONObject jsonObject;
-                    try (FileReader fileReader = new FileReader("./"+ ResourceType.SCENE.directoryName + "/" + sceneName); 
-                         Scanner scanner = new Scanner(fileReader)){
-                        StringBuilder sb = new StringBuilder();
-                        while (scanner.hasNextLine()){
-                            sb.append(scanner.nextLine());
+        {
+            sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                    if (t1 != null) {
+                        // Clears preview images, live images, and audio.
+                        backgroundImage.setImage(null);
+                        foregroundImage.setImage(null);
+                        if (liveBackgroundImageView != null && !isFrozen) {
+                            liveBackgroundImageView.setImage(null);
+                        }
+                        if (liveForegroundImageView != null && !isFrozen) {
+                            liveForegroundImageView.setImage(null);
                         }
 
-                        // Selects the scene items from the lists.
-                        jsonObject = new JSONObject(sb.toString());
-                        if (jsonObject.has("background")){
-                            backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                        clearMediaPlayer(SoundType.MUSIC);
+                        clearMediaPlayer(SoundType.AMBIANCE);
+                        clearMediaPlayer(SoundType.SOUND_EFFECT);
+
+                        // Deselects all normal resource names to be reselected later
+                        backgroundList.getSelectionModel().clearSelection();
+                        foregroundList.getSelectionModel().clearSelection();
+                        musicList.getSelectionModel().clearSelection();
+                        ambianceList.getSelectionModel().clearSelection();
+                        soundEffectList.getSelectionModel().clearSelection();
+
+                        // Updates background, foreground, and sounds from selected scene.
+
+                        String sceneName = sceneList.getSelectionModel().getSelectedItem();
+                        JSONObject jsonObject;
+                        try (FileReader fileReader = new FileReader("./" + ResourceType.SCENE.directoryName + "/" + sceneName);
+                             Scanner scanner = new Scanner(fileReader)) {
+                            StringBuilder sb = new StringBuilder();
+                            while (scanner.hasNextLine()) {
+                                sb.append(scanner.nextLine());
+                            }
+
+                            // Selects the scene items from the lists.
+                            jsonObject = new JSONObject(sb.toString());
+                            if (jsonObject.has("background")) {
+                                backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                            }
+                            if (jsonObject.has("foreground")) {
+                                foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                            }
+                            if (jsonObject.has("music")) {
+                                musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                                playSound(SoundType.MUSIC);
+                            }
+                            if (jsonObject.has("ambiance")) {
+                                ambianceList.getSelectionModel().select((String) jsonObject.get("ambiance"));
+                                playSound(SoundType.AMBIANCE);
+                            }
+                        } catch (IOException e) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Scene import error");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Unable to load scene from project resource folder.");
+                            alert.showAndWait();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        if (jsonObject.has("foreground")){
-                            foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
-                        }
-                        if (jsonObject.has("music")) {
-                            musicList.getSelectionModel().select((String) jsonObject.get("music"));
-                            playSound(SoundType.MUSIC);
-                        }
-                        if (jsonObject.has("ambiance")){
-                            ambianceList.getSelectionModel().select((String) jsonObject.get("ambiance"));
-                            playSound(SoundType.AMBIANCE);
-                        }
-                    } catch (IOException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Scene import error");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Unable to load scene from project resource folder.");
-                        alert.showAndWait();
-                    } catch (Exception e){
-                        e.printStackTrace();
                     }
                 }
-            }
-        });
-        sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.SCENE);
-                }
-                mouseEvent.consume();
-            }
-        });
-
-        backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        backgroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if (t1 != null){
-                    // Updates preview window with clicked resource
-                    String backgroundName = backgroundList.getSelectionModel().getSelectedItem();
-
-                    // Do nothing since nothing is selected
-                    if (backgroundName == null){
-                        return;
+            });
+            sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.SCENE);
                     }
+                    mouseEvent.consume();
+                }
+            });
 
-                    Image image;
-                    try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.BACKGROUND.directoryName + 
-                            "/" + backgroundName)) {
-                        image = new Image(fileInputStream);
-                        backgroundImage.setImage(image);
-                        if (liveBackgroundImageView != null && !isFrozen){
-                            liveBackgroundImageView.setImage(image);
+            backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            backgroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                    if (t1 != null) {
+                        // Updates preview window with clicked resource
+                        String backgroundName = backgroundList.getSelectionModel().getSelectedItem();
+
+                        // Do nothing since nothing is selected
+                        if (backgroundName == null) {
+                            return;
                         }
-                    } catch (IOException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Background Load Error");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Unable to load background from project resource folder.");
-                        alert.showAndWait();
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        backgroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.BACKGROUND);
-                }
-                mouseEvent.consume();
-            }
-        });
 
-        foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            // Updates preview window with clicked resource
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if (t1 != null){
-                    String foregroundName = foregroundList.getSelectionModel().getSelectedItem();
-
-                    // Do nothing since nothing is selected
-                    if (foregroundName == null){
-                        return;
-                    }
-
-                    Image image;
-                    try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.FOREGROUND.directoryName + "/" + foregroundName)) {
-                        image = new Image(fileInputStream);
-                        foregroundImage.setImage(image);
-                        if (liveForegroundImageView != null && !isFrozen){
-                            liveForegroundImageView.setImage(image);
+                        Image image;
+                        try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.BACKGROUND.directoryName +
+                                "/" + backgroundName)) {
+                            image = new Image(fileInputStream);
+                            backgroundImage.setImage(image);
+                            if (liveBackgroundImageView != null && !isFrozen) {
+                                liveBackgroundImageView.setImage(image);
+                            }
+                        } catch (IOException e) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Background Load Error");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Unable to load background from project resource folder.");
+                            alert.showAndWait();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Foreground Load Error");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Unable to load foreground from project resource folder.");
-                        alert.showAndWait();
-                    } catch (Exception e){
-                        e.printStackTrace();
                     }
                 }
-            }
-        });
-        foregroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.FOREGROUND);
-                }
-                mouseEvent.consume();
-            }
-        });
-
-        musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        musicList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.MUSIC);
-                }
-                mouseEvent.consume();
-            }
-        });
-
-        ambianceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        ambianceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.AMBIANCE);
-                }
-                mouseEvent.consume();
-            }
-        });
-
-        soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        soundEffectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if (t1 != null){
-                    String soundEffectName = soundEffectList.getSelectionModel().getSelectedItem();
-
-                    // Do nothing since nothing is selected
-                    if (soundEffectName == null){
-                        return;
+            });
+            backgroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.BACKGROUND);
                     }
+                    mouseEvent.consume();
+                }
+            });
 
-                    playSound(SoundType.SOUND_EFFECT);
+            foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+                @Override
+                // Updates preview window with clicked resource
+                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                    if (t1 != null) {
+                        String foregroundName = foregroundList.getSelectionModel().getSelectedItem();
+
+                        // Do nothing since nothing is selected
+                        if (foregroundName == null) {
+                            return;
+                        }
+
+                        Image image;
+                        try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.FOREGROUND.directoryName + "/" + foregroundName)) {
+                            image = new Image(fileInputStream);
+                            foregroundImage.setImage(image);
+                            if (liveForegroundImageView != null && !isFrozen) {
+                                liveForegroundImageView.setImage(image);
+                            }
+                        } catch (IOException e) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Foreground Load Error");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Unable to load foreground from project resource folder.");
+                            alert.showAndWait();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
-        });
-        soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource(ResourceType.SOUND_EFFECT);
+            });
+            foregroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.FOREGROUND);
+                    }
+                    mouseEvent.consume();
                 }
-                mouseEvent.consume();
-            }
-        });
+            });
+
+            musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            musicList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.MUSIC);
+                    }
+                    mouseEvent.consume();
+                }
+            });
+
+            ambianceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            ambianceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.AMBIANCE);
+                    }
+                    mouseEvent.consume();
+                }
+            });
+
+            soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            soundEffectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                    if (t1 != null) {
+                        String soundEffectName = soundEffectList.getSelectionModel().getSelectedItem();
+
+                        // Do nothing since nothing is selected
+                        if (soundEffectName == null) {
+                            return;
+                        }
+
+                        playSound(SoundType.SOUND_EFFECT);
+                    }
+                }
+            });
+            soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.SOUND_EFFECT);
+                    }
+                    mouseEvent.consume();
+                }
+            });
+        }
 
         // Behavior for tweaking presenter appearance.
-        
-        foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
+        {
+            foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                // Changes foreground scale of live/preview windows
+                public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                    onRatioSliderChanged();
+                }
+            });
+
+            colorPicker.setValue(Color.GRAY);
+            colorPicker.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                // Changes background color of live/preview windows
+                public void handle(ActionEvent actionEvent) {
+                    if (colorPicker.getValue() != null) {
+                        GraphicsContext gc = previewCanvas.getGraphicsContext2D();
+                        gc.setFill(colorPicker.getValue());
+                        gc.fillRect(0, 0, 400, 400);
+
+                        if (liveStage != null) {
+                            liveStage.getScene().setFill(colorPicker.getValue());
+                        }
+                    }
+                    actionEvent.consume();
+                }
+            });
+        }
+
+        // Audio controls
+        musicSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
-            // Changes foreground scale of live/preview windows
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                onRatioSliderChanged();
+                if (musicPlayer != null){
+                    musicPlayer.setVolume((double) t1);
+                }
             }
         });
-        
-        colorPicker.setValue(Color.GRAY);
-        colorPicker.setOnAction(new EventHandler<ActionEvent>() {
+        ambianceSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
-            // Changes background color of live/preview windows
-            public void handle(ActionEvent actionEvent) {
-                if (colorPicker.getValue() != null) {
-                    GraphicsContext gc = previewCanvas.getGraphicsContext2D();
-                    gc.setFill(colorPicker.getValue());
-                    gc.fillRect(0, 0, 400, 400);
-
-                    if (liveStage != null){
-                        liveStage.getScene().setFill(colorPicker.getValue());
-                    }
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                if (ambiancePlayer != null){
+                    ambiancePlayer.setVolume((double) t1);
                 }
-                actionEvent.consume();
+            }
+        });
+        soundEffectSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                if (soundEffectPlayer != null){
+                    soundEffectPlayer.setVolume((double) t1);
+                }
             }
         });
     }
@@ -1335,6 +1377,11 @@ public class TabletopController implements Initializable {
                         resumeMusicItem.setDisable(true);
                         stopMusicItem.setDisable(false);
                     } else {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("No Music Selected");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Select music from the left panel before playing.");
+                        alert.showAndWait();
                         return;
                     }
                     break;
@@ -1356,6 +1403,11 @@ public class TabletopController implements Initializable {
                         resumeAmbianceItem.setDisable(true);
                         stopAmbianceItem.setDisable(false);
                     } else {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("No Ambiance Selected");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Select ambiance from the left panel before playing.");
+                        alert.showAndWait();
                         return;
                     }
                     break;
@@ -1419,10 +1471,18 @@ public class TabletopController implements Initializable {
                 mediaPlayer.pause();
 
                 // Updates media menu items
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(true);
-                resumeMusicItem.setDisable(false);
-                stopMusicItem.setDisable(false);
+                if (soundType == SoundType.MUSIC){
+                    startMusicItem.setDisable(false);
+                    pauseMusicItem.setDisable(true);
+                    resumeMusicItem.setDisable(false);
+                    stopMusicItem.setDisable(false);
+                } else {
+                    startAmbianceItem.setDisable(false);
+                    pauseAmbianceItem.setDisable(true);
+                    resumeAmbianceItem.setDisable(false);
+                    stopAmbianceItem.setDisable(false);
+                }
+                
                 break;
         }
     }

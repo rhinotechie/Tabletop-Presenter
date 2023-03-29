@@ -50,11 +50,12 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="Save scene" onAction="#onSaveSceneClicked"/>
             </Menu>
-            <Menu text="_Music player">
+            <Menu text="_Audio">
                 <MenuItem fx:id="startMusicItem" text="Start Music" onAction="#onStartMusicClicked"/>
                 <MenuItem fx:id="resumeMusicItem" text="Resume Music" disable="true" onAction="#onResumeMusicClicked"/>
                 <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
                 <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
+                <SeparatorMenuItem/>
                 <MenuItem fx:id="startAmbianceItem" text="Start Ambience" onAction="#onStartAmbianceClicked"/>
                 <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambience" disable="true" onAction="#onResumeAmbianceClicked"/>
                 <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambience" disable="true" onAction="#onPauseAmbianceClicked"/>
@@ -85,7 +86,7 @@
                     <ListView fx:id="musicList" />
                 </TitledPane>
                 <TitledPane text="Ambience" expanded="false">
-                    <ListView fx:id="ambienceList"/>
+                    <ListView fx:id="ambianceList"/>
                 </TitledPane>
                 <TitledPane text="Sound Effects" expanded="false">
                     <ListView fx:id="soundEffectList"/>
@@ -120,7 +121,15 @@
         </VBox>
     </right>
     <bottom>
-        <StatusBar fx:id="statusBar" text="No music">
+        <StatusBar fx:id="statusBar" text="">
+            <leftItems>
+                <Label fx:id="musicLabel" text="Music: "/>
+                <Slider fx:id="musicSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
+                <Label fx:id="ambianceLabel" text="Ambience: "/>
+                <Slider fx:id="ambianceSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
+                <Label fx:id="soundEffectLabel" text="Sound Effects: "/>
+                <Slider fx:id="soundEffectSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
+            </leftItems>
             <rightItems>
                 <Label fx:id="presenterStatus" text="Not presenting"/>
             </rightItems>
