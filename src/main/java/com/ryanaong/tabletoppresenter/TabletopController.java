@@ -36,8 +36,37 @@ import org.json.*;
 
 // Controller class for the TableTopApplication
 public class TabletopController implements Initializable {
+
+    enum SoundType {
+        MUSIC ("Music"),
+        AMBIANCE ("Ambiance"),
+        SOUND_EFFECT("Sound Effects");
+
+        private String directoryName;
+
+        SoundType(String directoryName) {
+            this.directoryName = directoryName;
+        }
+    }
+
+    enum ResourceType {
+        SCENE ("Scenes"),
+        BACKGROUND ("Backgrounds"),
+        FOREGROUND ("Foregrounds"),
+        MUSIC ("Music"),
+        AMBIANCE ("Ambience"),
+        SOUND_EFFECT ("Sound Effects");
+
+        private String directoryName;
+
+        ResourceType(String directoryName) {
+            this.directoryName = directoryName;
+        }
+    }
+
     private boolean isFrozen = false;
     private Stage hostingStage;
+
     public void setHostingStage(Stage hostingStage) {
         this.hostingStage = hostingStage;
     }
@@ -78,6 +107,14 @@ public class TabletopController implements Initializable {
     @FXML
     private MenuItem stopMusicItem;
     @FXML
+    private MenuItem startAmbienceItem;
+    @FXML
+    private MenuItem resumeAmbienceItem;
+    @FXML
+    private MenuItem pauseAmbienceItem;
+    @FXML
+    private MenuItem stopAmbienceItem;
+    @FXML
     private BorderPane mainBorderPane;
 
     @FXML
@@ -114,16 +151,92 @@ public class TabletopController implements Initializable {
     private ImageView liveForegroundImageView;
 
     // Media
-    @FXML
-    private MediaPlayer mediaPlayer;
+    private MediaPlayer musicPlayer;
+    private MediaPlayer ambiencePlayer;
+    private MediaPlayer soundEffectPlayer;
 
-    // Post-processing
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Ensures project directories are created if they aren't already
         onRefreshResourcesClicked();
 
         // Enables click behavior for item lists.
+
+        sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if(t1 != null){
+                    // Clears preview images, live images, and audio.
+                    backgroundImage.setImage(null);
+                    foregroundImage.setImage(null);
+                    if (liveBackgroundImageView != null && !isFrozen){
+                        liveBackgroundImageView.setImage(null);
+                    }
+                    if(liveForegroundImageView != null && !isFrozen){
+                        liveForegroundImageView.setImage(null);
+                    }
+
+                    clearMediaPlayer(SoundType.MUSIC);
+                    clearMediaPlayer(SoundType.AMBIANCE);
+                    clearMediaPlayer(SoundType.SOUND_EFFECT);
+
+                    // Deselects all normal resource names to be reselected later
+                    backgroundList.getSelectionModel().clearSelection();
+                    foregroundList.getSelectionModel().clearSelection();
+                    musicList.getSelectionModel().clearSelection();
+                    ambienceList.getSelectionModel().clearSelection();
+                    soundEffectList.getSelectionModel().clearSelection();
+
+                    // Updates background, foreground, and music from selected scene.
+
+                    String sceneName = sceneList.getSelectionModel().getSelectedItem();
+                    JSONObject jsonObject;
+                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName); Scanner scanner = new Scanner(fileReader)){
+                        StringBuilder sb = new StringBuilder();
+                        while (scanner.hasNextLine()){
+                            sb.append(scanner.nextLine());
+                        }
+
+                        // Selects the scene items from the lists.
+                        jsonObject = new JSONObject(sb.toString());
+                        if (jsonObject.has("background")){
+                            backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                        }
+                        if (jsonObject.has("foreground")){
+                            foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                        }
+                        if (jsonObject.has("music")) {
+                            musicList.getSelectionModel().select((String) jsonObject.get("music"));
+                            playMusic(SoundType.MUSIC);
+                        }
+                        if (jsonObject.has("ambience")){
+                            ambienceList.getSelectionModel().select((String) jsonObject.get("ambience"));
+                            playMusic(SoundType.AMBIANCE);
+                        }
+                    } catch (IOException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Scene import error");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Unable to load scene from project resource folder.");
+                        alert.showAndWait();
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.getButton() == MouseButton.SECONDARY){
+                    onDeleteResource(ResourceType.SCENE);
+                }
+                mouseEvent.consume();
+            }
+        });
+
         backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         backgroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -162,11 +275,12 @@ public class TabletopController implements Initializable {
             // TODO: Open a context menu for item deletion.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource("Backgrounds");
+                    onDeleteResource(ResourceType.BACKGROUND);
                 }
                 mouseEvent.consume();
             }
         });
+
         foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -204,87 +318,50 @@ public class TabletopController implements Initializable {
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource("Foregrounds");
+                    onDeleteResource(ResourceType.FOREGROUND);
                 }
                 mouseEvent.consume();
             }
         });
+
         musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         musicList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource("Music");
+                    onDeleteResource(ResourceType.MUSIC);
                 }
                 mouseEvent.consume();
             }
         });
-        sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if(t1 != null){
-                    // Clears preview and live images and audio in case a scene has 1 or 2 items.
-                    backgroundImage.setImage(null);
-                    foregroundImage.setImage(null);
-                    if (liveBackgroundImageView != null && !isFrozen){
-                        liveBackgroundImageView.setImage(null);
-                    }
-                    if(liveForegroundImageView != null && !isFrozen){
-                        liveForegroundImageView.setImage(null);
-                    }
 
-                    clearMediaPlayer();
-
-                    // Deselects all normal resource names to be reselected later
-                    backgroundList.getSelectionModel().clearSelection();
-                    foregroundList.getSelectionModel().clearSelection();
-                    musicList.getSelectionModel().clearSelection();
-
-                    // Updates background, foreground, and music from selected scene.
-                    String sceneName = sceneList.getSelectionModel().getSelectedItem();
-                    JSONObject jsonObject;
-                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName); Scanner scanner = new Scanner(fileReader)){
-                        StringBuilder sb = new StringBuilder();
-                        while (scanner.hasNextLine()){
-                            sb.append(scanner.nextLine());
-                        }
-
-                        // Selects the scene items from the lists.
-                        jsonObject = new JSONObject(sb.toString());
-                        if (jsonObject.has("background")){
-                            backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
-                        }
-                        if (jsonObject.has("foreground")){
-                            foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
-                        }
-                        if (jsonObject.has("music")) {
-                            musicList.getSelectionModel().select((String) jsonObject.get("music"));
-                            playMusic();
-                        }
-                    } catch (IOException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Scene import error");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Unable to load scene from project resource folder.");
-                        alert.showAndWait();
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        ambienceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        ambienceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
-                    onDeleteResource("Scenes");
+                    onDeleteResource(ResourceType.AMBIANCE);
                 }
                 mouseEvent.consume();
             }
         });
+
+        soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.getButton() == MouseButton.SECONDARY){
+                    onDeleteResource(ResourceType.SOUND_EFFECT);
+                }
+                mouseEvent.consume();
+            }
+        });
+
+        // Behavior for tweaking presenter appearance.
+
         foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             // Changes foreground scale of live/preview windows
@@ -310,26 +387,272 @@ public class TabletopController implements Initializable {
             }
         });
     }
+    
+    // Creates a new instance of specified media and media player and plays it.
+    // USAGE: Use the resource folder name for soundType.
+    private void playMusic(SoundType soundType){
+        try {
+            // Get the sound name depending on the type of sound requested
+            String soundName;
+            switch (soundType){
+                case MUSIC:
+                    clearMediaPlayer(SoundType.MUSIC);
+                    if (!musicList.getSelectionModel().isEmpty()){
+                        soundName = musicList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        musicPlayer = new MediaPlayer(media);
+                        musicPlayer.setAutoPlay(false);
+                        musicPlayer.play();
 
-    @FXML
-    // Toggle stretch/non-stretched backgrounds for preview and live windows.
-    public void onStretchClicked(){
-        backgroundImage.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
-        if (liveBackgroundImageView != null && !isFrozen){
-            liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+                        // Updates media menu items
+                        startMusicItem.setDisable(false);
+                        pauseMusicItem.setDisable(false);
+                        resumeMusicItem.setDisable(true);
+                        stopMusicItem.setDisable(false);
+                    } else {
+                        return;
+                    }
+                    break;
+                case AMBIANCE:
+                    clearMediaPlayer(SoundType.AMBIANCE);
+                    if (!ambienceList.getSelectionModel().isEmpty()){
+                        soundName = ambienceList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        ambiencePlayer = new MediaPlayer(media);
+                        ambiencePlayer.setAutoPlay(false);
+                        ambiencePlayer.play();
+
+                        // Updates media menu items
+                        startAmbienceItem.setDisable(false);
+                        pauseAmbienceItem.setDisable(false);
+                        resumeAmbienceItem.setDisable(true);
+                        stopAmbienceItem.setDisable(false);
+                    } else {
+                        return;
+                    }
+                    break;
+                case SOUND_EFFECT:
+                    clearMediaPlayer(SoundType.SOUND_EFFECT);
+                    if (!soundEffectList.getSelectionModel().isEmpty()){
+                        soundName = soundEffectList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        soundEffectPlayer = new MediaPlayer(media);
+                        soundEffectPlayer.setAutoPlay(false);
+                        soundEffectPlayer.play();
+                    } else {
+                        return;
+                    }
+                    break;
+                default:
+            }
+        } catch (IllegalArgumentException iae){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Music Load Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to load music from project resource folder.");
+            alert.showAndWait();
+        } catch (UnsupportedOperationException | MediaException e){
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Incompatible Music");
+            alert.setHeaderText(null);
+            alert.setContentText("Could not play selected music.");
+            alert.showAndWait();
         }
     }
 
-    @FXML
-    // Changes scale of foreground image according to slider
-    public void onRatioSliderChanged(){
-        if (foregroundImage != null){
-            foregroundImage.setScaleX(foregroundScaleSlider.getValue());
-            foregroundImage.setScaleY(foregroundScaleSlider.getValue());
+    // If music is playing, music gets paused.
+    private void pauseMusic(SoundType soundType){
+        if (musicPlayer == null){
+            return;
         }
-        if (liveForegroundImageView != null && !isFrozen){
-            liveForegroundImageView.setScaleX(foregroundScaleSlider.getValue());
-            liveForegroundImageView.setScaleY(foregroundScaleSlider.getValue());
+
+        switch(musicPlayer.getStatus()){
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(SoundType.MUSIC);
+                return;
+            case PLAYING:
+                musicPlayer.pause();
+
+                // Updates media menu items
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(false);
+                stopMusicItem.setDisable(false);
+
+                break;
+        }
+    }
+
+    // If music is paused, the music continues to play or plays from beginning.
+    private void resumeMusic(SoundType soundType){
+        if (musicPlayer == null){
+            return;
+        }
+
+        switch (musicPlayer.getStatus()){
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(SoundType.MUSIC);
+                return;
+            case PAUSED:
+                musicPlayer.play();
+
+                // Updates media menu items
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(false);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(false);
+
+
+                break;
+        }
+    }
+
+    // If music is playing, the music gets stopped.
+    private void stopMusic(SoundType soundType){
+        if (musicPlayer == null){
+            return;
+        }
+
+        switch (musicPlayer.getStatus()){
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(SoundType.MUSIC);
+                return;
+            case PLAYING:
+            case PAUSED:
+            case STALLED:
+                musicPlayer.stop();
+                clearMediaPlayer(SoundType.MUSIC);
+                break;
+        }
+    }
+
+    // Resets media players and updates menu bar items to initial state
+    public void clearMediaPlayer(SoundType soundType){
+        // Disposes appropriate media player instead of setting them to null for better status checking.
+        switch(soundType){
+            case MUSIC:
+                if (musicPlayer != null){
+                    musicPlayer.dispose();
+                }
+
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(true);
+
+                break;
+            case AMBIANCE:
+                if (ambiencePlayer != null){
+                    ambiencePlayer.dispose();
+                }
+
+                startAmbienceItem.setDisable(false);
+                pauseAmbienceItem.setDisable(true);
+                resumeAmbienceItem.setDisable(true);
+                stopAmbienceItem.setDisable(true);
+
+                break;
+            case SOUND_EFFECT:
+                if (soundEffectPlayer != null){
+                    soundEffectPlayer.dispose();
+                }
+                break;
+            default:
+        }
+    }
+
+    // Reloads the resource lists. Re-selects the items that were unselected.
+    // Side-effect: Music restarts on load
+    @FXML
+    public void onRefreshResourcesClicked(){
+        // Saves previous selections (if any)
+
+        String prevBackground = null;
+        if(!backgroundList.getSelectionModel().isEmpty()){
+            prevBackground = backgroundList.getSelectionModel().getSelectedItem();
+        }
+
+        String prevForeGround = null;
+        if(!foregroundList.getSelectionModel().isEmpty()){
+            prevForeGround = foregroundList.getSelectionModel().getSelectedItem();
+        }
+
+        String prevMusic = null;
+        if(!musicList.getSelectionModel().isEmpty()){
+            prevMusic = musicList.getSelectionModel().getSelectedItem();
+        }
+
+        String prevAmbience = null;
+        if(!ambienceList.getSelectionModel().isEmpty()){
+            prevAmbience = ambienceList.getSelectionModel().getSelectedItem();
+        }
+
+        // Loads resources or makes empty directories if they don't exist.
+
+        File foregroundDir = new File("./Foregrounds");
+        if (!foregroundDir.mkdir()) {
+            String[] foregrounds = foregroundDir.list();
+            foregroundList.getItems().setAll(foregrounds);
+        }
+
+        File backgroundDir = new File("./Backgrounds");
+        if (!backgroundDir.mkdir()) {
+            String[] backgrounds = backgroundDir.list();
+            backgroundList.getItems().setAll(backgrounds);
+        }
+
+        File sceneDir = new File("./Scenes");
+        if (!sceneDir.mkdir()) {
+            String[] scenes = sceneDir.list();
+            sceneList.getItems().setAll(scenes);
+        }
+
+        File musicDir = new File("./Music");
+        if (!musicDir.mkdir()) {
+            String[] music = musicDir.list();
+            musicList.getItems().setAll(music);
+        }
+
+        File ambienceDir = new File("./Ambiences");
+        if (!ambienceDir.mkdir()) {
+            String[] ambiences = ambienceDir.list();
+            ambienceList.getItems().setAll(ambiences);
+        }
+
+        File soundEffectDir = new File("./Sound Effects");
+        if (!soundEffectDir.mkdir()) {
+            String[] soundEffects = soundEffectDir.list();
+            soundEffectList.getItems().setAll(soundEffects);
+        }
+
+        // Restores previous selections (if any)
+
+        if (prevBackground != null){
+            backgroundList.getSelectionModel().select(prevBackground);
+        }
+
+        if (prevForeGround != null){
+            foregroundList.getSelectionModel().select(prevForeGround);
+        }
+
+        if (prevMusic != null){
+            musicList.getSelectionModel().select(prevMusic);
+        }
+
+        if (prevAmbience != null){
+            ambienceList.getSelectionModel().select(prevAmbience);
         }
     }
 
@@ -665,62 +988,6 @@ public class TabletopController implements Initializable {
         dialog.showAndWait();
     }
 
-    // Reloads the resource lists. Re-selects the items that were unselected.
-    // Side-effect: Music restarts on load
-    @FXML
-    public void onRefreshResourcesClicked(){
-        // Saves previous selections (if any)
-        String prevBackground = null;
-        String prevForeGround = null;
-        String prevMusic = null;
-        if(!backgroundList.getSelectionModel().isEmpty()){
-            prevBackground = backgroundList.getSelectionModel().getSelectedItem();
-        }
-        if(!foregroundList.getSelectionModel().isEmpty()){
-            prevForeGround = foregroundList.getSelectionModel().getSelectedItem();
-        }
-        if(!musicList.getSelectionModel().isEmpty()){
-            prevMusic = musicList.getSelectionModel().getSelectedItem();
-        }
-
-        File foregroundDir = new File("./Foregrounds");
-        File backgroundDir = new File("./Backgrounds");
-        File musicDir = new File("./Music");
-        File sceneDir = new File("./Scenes");
-
-        statusBar.setText("Music stopped");
-
-        // Loads resources or makes empty directories if they don't exist.
-        if (!foregroundDir.mkdir()) {
-            String[] foregrounds = foregroundDir.list();
-            foregroundList.getItems().setAll(foregrounds);
-        }
-        if (!backgroundDir.mkdir()) {
-            String[] backgrounds = backgroundDir.list();
-            backgroundList.getItems().setAll(backgrounds);
-        }
-        if (!musicDir.mkdir()) {
-            String[] music = musicDir.list();
-            musicList.getItems().setAll(music);
-        }
-        if (!sceneDir.mkdir()) {
-            String[] scenes = sceneDir.list();
-            sceneList.getItems().setAll(scenes);
-        }
-
-        // Restores previous selections (if any)
-        // Saves previous selections (if any)
-        if (prevBackground != null){
-            backgroundList.getSelectionModel().select(prevBackground);
-        }
-        if (prevForeGround != null){
-            foregroundList.getSelectionModel().select(prevForeGround);
-        }
-        if (prevMusic != null){
-            musicList.getSelectionModel().select(prevMusic);
-        }
-    }
-
     // Clears preview and live background and unselects the resource from the list.
     @FXML
     public void onBackgroundClearedClicked(){
@@ -761,169 +1028,42 @@ public class TabletopController implements Initializable {
         sceneList.getSelectionModel().clearSelection();
 
         musicList.getSelectionModel().clearSelection();
-        if (mediaPlayer != null){
+        ambienceList.getSelectionModel().clearSelection();
+        soundEffectList.getSelectionModel().clearSelection();
+        if (musicPlayer != null){
             this.onPauseMusicClicked();
-        }
-    }
-
-    // Plays currently selected music.
-    private void playMusic(){
-        String musicName = musicList.getSelectionModel().getSelectedItem();
-
-        // Don't play music if nothing was selected.
-        if (musicName == null){
-            return;
-        }
-
-        clearMediaPlayer();
-
-        try {
-            Media media = new Media(new File("./Music/" + musicName).toURI().toString());
-            mediaPlayer = new MediaPlayer(media);
-            mediaPlayer.setAutoPlay(false);
-            mediaPlayer.play();
-
-            // Updates media menu items
-            startMusicItem.setDisable(false);
-            pauseMusicItem.setDisable(false);
-            resumeMusicItem.setDisable(true);
-            stopMusicItem.setDisable(false);
-
-            statusBar.setText("Music playing");
-        } catch (IllegalArgumentException iae){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Music Load Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Unable to load music from project resource folder.");
-            alert.showAndWait();
-        } catch (UnsupportedOperationException | MediaException e){
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Incompatible Music");
-            alert.setHeaderText(null);
-            alert.setContentText("Could not play selected music.");
-            alert.showAndWait();
-        }
-    }
-
-    // If music is playing, music gets paused.
-    private void pauseMusic(){
-        if (mediaPlayer == null){
-            return;
-        }
-
-        switch(mediaPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer();
-                return;
-            case PLAYING:
-                mediaPlayer.pause();
-
-                // Updates media menu items
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(true);
-                resumeMusicItem.setDisable(false);
-                stopMusicItem.setDisable(false);
-
-                statusBar.setText("Music paused");
-                break;
-        }
-    }
-
-    // If music is paused, the music continues to play or plays from beginning.
-    private void resumeMusic(){
-        if (mediaPlayer == null){
-            return;
-        }
-
-        switch (mediaPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer();
-                return;
-            case PAUSED:
-                mediaPlayer.play();
-
-                // Updates media menu items
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(false);
-                resumeMusicItem.setDisable(true);
-                stopMusicItem.setDisable(false);
-
-                statusBar.setText("Music playing");
-                break;
-        }
-    }
-
-    // If music is playing, the music gets stopped.
-    private void stopMusic(){
-        if (mediaPlayer == null){
-            return;
-        }
-
-        switch (mediaPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer();
-                return;
-            case PLAYING:
-            case PAUSED:
-            case STALLED:
-                mediaPlayer.stop();
-                clearMediaPlayer();
-                break;
         }
     }
 
     // When the user clicks 'Start Music' in menu bar, music starts.
     @FXML
     public void onStartMusicClicked() {
-        playMusic();
+        playMusic(SoundType.MUSIC);
     }
 
     // When the user clicks 'Resume Music' in menu bar, music resumes.
     @FXML
     public void onResumeMusicClicked() {
-        resumeMusic();
+        resumeMusic(SoundType.MUSIC);
     }
 
     // When the user clicks 'Stop Music' in menu bar, music stops.
     @FXML
     public void onStopMusicClicked() {
-        stopMusic();
+        stopMusic(SoundType.MUSIC);
     }
 
     // When the user clicks 'Pause Music' in menu bar, music pauses.
     @FXML
     public void onPauseMusicClicked(){
-        pauseMusic();
-    }
-
-    // Resets media player and updates menu bar items to initial state
-    // Do not set media player to null as the disposed status is useful for checking if resources are freed.
-    public void clearMediaPlayer(){
-        if (mediaPlayer != null){
-            mediaPlayer.dispose();
-        }
-
-        // Updates media menu items
-        startMusicItem.setDisable(false);
-        pauseMusicItem.setDisable(true);
-        resumeMusicItem.setDisable(true);
-        stopMusicItem.setDisable(true);
-
-        statusBar.setText("No music");
+        pauseMusic(SoundType.MUSIC);
     }
 
     @FXML
     public void onSaveSceneClicked(){
         // Alert the user that nothing is selected so the scene is not saved.
         if (backgroundList.getSelectionModel().isEmpty() && foregroundList.getSelectionModel().isEmpty() &&
-                musicList.getSelectionModel().isEmpty()){
+                musicList.getSelectionModel().isEmpty() && ambienceList.getSelectionModel().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Nothing Selected");
             alert.setHeaderText(null);
@@ -945,6 +1085,10 @@ public class TabletopController implements Initializable {
         if (!musicList.getSelectionModel().isEmpty())
         {
             jsonMap.put("music", musicList.getSelectionModel().getSelectedItem());
+        }
+        if (!ambienceList.getSelectionModel().isEmpty())
+        {
+            jsonMap.put("ambience", ambienceList.getSelectionModel().getSelectedItem());
         }
         JSONObject jsonObject = new JSONObject(jsonMap);
 
@@ -1005,7 +1149,6 @@ public class TabletopController implements Initializable {
             throw new RuntimeException(e);
         }
 
-
         // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
@@ -1023,45 +1166,89 @@ public class TabletopController implements Initializable {
 
     @FXML
     // Displays file deletion dialog and deletes the target file from project directory.
-    // Resource type should be capitalized and named as project folder
-    public void onDeleteResource(String resourceType){
-        if (Objects.equals(resourceType, "Music")){
-            if (mediaPlayer == null) {
+    public void onDeleteResource(ResourceType resourceType){
+        switch (resourceType){
+            case MUSIC:
+                freePlayerBeforeDeletion(SoundType.MUSIC);
+                break;
+            case AMBIANCE:
+                freePlayerBeforeDeletion(SoundType.AMBIANCE);
+                break;
+            case SOUND_EFFECT:
+                freePlayerBeforeDeletion(SoundType.SOUND_EFFECT);
+                break;
+            case SCENE:
+            case BACKGROUND:
+            case FOREGROUND:
                 deleteResource(resourceType);
-            }
-
-            switch (mediaPlayer.getStatus()) {
-                case DISPOSED:
-                    deleteResource(resourceType);
-                    break;
-                case PLAYING:
-                case STALLED:
-                case PAUSED:
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Turn off music");
-                    alert.setHeaderText(null);
-                    alert.setContentText("No music must be playing/paused before music deletion.");
-                    alert.showAndWait();
-                    break;
-                case HALTED:
-                case STOPPED:
-                    Alert tryAgainAlert = new Alert(Alert.AlertType.INFORMATION);
-                    tryAgainAlert.setTitle("Media player busy");
-                    tryAgainAlert.setHeaderText(null);
-                    tryAgainAlert.setContentText("Media player is busy. Try again in a few moments.");
-                    tryAgainAlert.showAndWait();
-                    clearMediaPlayer();
-            }
-        } else {
-            deleteResource(resourceType);
+                break;
+            default:
         }
     }
 
     // Helper function for onDeleteResource
-    private void deleteResource(String resourceType){
+    // Ensures deletion only occurs if player is in a proper state.
+    private void freePlayerBeforeDeletion(SoundType soundType){
+        MediaPlayer mediaPlayer;
+        switch(soundType){
+            case MUSIC:
+                mediaPlayer = musicPlayer;
+                break;
+            case AMBIANCE:
+                mediaPlayer = ambiencePlayer;
+                break;
+            case SOUND_EFFECT:
+                mediaPlayer = soundEffectPlayer;
+                break;
+            default:
+                return;
+        }
+
+        switch (mediaPlayer.getStatus()) {
+            case DISPOSED:
+                // Ideal state. Ready for deletion.
+                if (soundType == SoundType.MUSIC) {
+                    deleteResource(ResourceType.MUSIC);
+                } else if (soundType == SoundType.AMBIANCE) {
+                    deleteResource(ResourceType.AMBIANCE);
+                } else {
+                    deleteResource(ResourceType.SOUND_EFFECT);
+                }
+                break;
+            case PLAYING:
+            case STALLED:
+            case PAUSED:
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Turn off music");
+                alert.setHeaderText(null);
+                alert.setContentText("No music must be playing/paused before music deletion.");
+                alert.showAndWait();
+                break;
+            case HALTED:
+            case STOPPED:
+                Alert tryAgainAlert = new Alert(Alert.AlertType.INFORMATION);
+                tryAgainAlert.setTitle("Media player busy");
+                tryAgainAlert.setHeaderText(null);
+                tryAgainAlert.setContentText("Media player is busy. Try again in a few moments.");
+                tryAgainAlert.showAndWait();
+
+                // Disposes the player so the user can try again and delete the file.
+                if (soundType == SoundType.MUSIC){
+                    clearMediaPlayer(soundType);
+                } else if (soundType == SoundType.AMBIANCE) {
+                    clearMediaPlayer(SoundType.AMBIANCE);
+                } else {
+                    clearMediaPlayer(SoundType.SOUND_EFFECT);
+                }
+        }
+    }
+
+    // Helper function for onDeleteResource
+    // Resource is ready to be deleted
+    private void deleteResource(ResourceType resourceType){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Delete resource");
-        dialog.setContentText("Do you want to delete the resource in the project directory?");
+        dialog.setContentText("Do you want to delete the resource from the project directory?");
         dialog.initOwner(mainBorderPane.getScene().getWindow());
 
         // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
@@ -1073,44 +1260,50 @@ public class TabletopController implements Initializable {
 
         // Get the respective listView
         ListView<String> listView;
-        switch(resourceType.toLowerCase()) {
-            case "backgrounds":
-            case "background":
+        switch(resourceType) {
+            case BACKGROUND:
                 listView = backgroundList;
                 break;
-            case "foregrounds":
-            case "foreground":
+            case FOREGROUND:
                 listView = foregroundList;
                 break;
-            case "music":
+            case MUSIC:
                 listView = musicList;
                 break;
-            case "scenes":
-            case "scene":
+            case AMBIANCE:
+                listView = ambienceList;
+                break;
+            case SOUND_EFFECT:
+                listView = soundEffectList;
+                break;
+            case SCENE:
                 listView = sceneList;
                 break;
             default:
-                throw new RuntimeException("Resource type parameter invalid");
+                return;
         }
 
         if (result.isPresent() && result.get() == ButtonType.YES){
             try {
-                File file = new File("./" + resourceType + "/" + listView.getSelectionModel().getSelectedItem());
+                File file = new File("./" + resourceType.directoryName + "/" + listView.getSelectionModel().getSelectedItem());
                 if (file.delete()) {
-                    switch(resourceType.toLowerCase()){
-                        case "backgrounds":
-                        case "background":
+                    switch(resourceType){
+                        case BACKGROUND:
                             onBackgroundClearedClicked();
                             break;
-                        case "foregrounds":
-                        case "foreground":
+                        case FOREGROUND:
                             onForegroundClearedClicked();
                             break;
-                        case "music":
+                        case MUSIC:
                             musicList.getSelectionModel().clearSelection();
                             break;
-                        case "scenes":
-                        case "scene":
+                        case AMBIANCE:
+                            ambienceList.getSelectionModel().clearSelection();
+                            break;
+                        case SOUND_EFFECT:
+                            soundEffectList.getSelectionModel().clearSelection();
+                            break;
+                        case SCENE:
                             sceneList.getSelectionModel().clearSelection();
                             break;
                     }
@@ -1140,9 +1333,47 @@ public class TabletopController implements Initializable {
         }
     }
 
+    @FXML
+    // Toggle stretch/non-stretched backgrounds for preview and live windows.
+    public void onStretchClicked(){
+        backgroundImage.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+        if (liveBackgroundImageView != null && !isFrozen){
+            liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
+        }
+    }
+
+    @FXML
+    // Changes scale of foreground image according to slider
+    public void onRatioSliderChanged(){
+        if (foregroundImage != null){
+            foregroundImage.setScaleX(foregroundScaleSlider.getValue());
+            foregroundImage.setScaleY(foregroundScaleSlider.getValue());
+        }
+        if (liveForegroundImageView != null && !isFrozen){
+            liveForegroundImageView.setScaleX(foregroundScaleSlider.getValue());
+            liveForegroundImageView.setScaleY(foregroundScaleSlider.getValue());
+        }
+    }
+
     // Closes application when menu Exit option is clicked.
     @FXML
     public void onExitClicked(){
         Platform.exit();
+    }
+
+    @FXML
+    public void onStartAmbienceClicked(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void onResumeAmbienceClicked(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void onPauseAmbienceClicked(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void onStopAmbienceClicked(ActionEvent actionEvent) {
     }
 }

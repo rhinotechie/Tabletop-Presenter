@@ -20,7 +20,7 @@ public class TableTopApplication extends Application {
     }
 
     @Override
-    public void start(Stage mainStage) throws IOException {
+    public void start(final Stage mainStage) throws IOException {
         // Imports the layout file for the mainStage's scene.
         URL url = getClass().getResource("mainScene.fxml");
         if (Objects.isNull(url)){

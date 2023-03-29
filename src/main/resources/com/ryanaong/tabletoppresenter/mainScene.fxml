@@ -49,10 +49,14 @@
                 <MenuItem text="Save scene" onAction="#onSaveSceneClicked"/>
             </Menu>
             <Menu text="_Music player">
-                <MenuItem fx:id="startMusicItem" text="Start" onAction="#onStartMusicClicked"/>
-                <MenuItem fx:id="resumeMusicItem" text="Resume" disable="true" onAction="#onResumeMusicClicked"/>
-                <MenuItem fx:id="pauseMusicItem" text="Pause" disable="true" onAction="#onPauseMusicClicked"/>
-                <MenuItem fx:id="stopMusicItem" text="Stop" disable="true" onAction="#onStopMusicClicked"/>
+                <MenuItem fx:id="startMusicItem" text="Start Music" onAction="#onStartMusicClicked"/>
+                <MenuItem fx:id="resumeMusicItem" text="Resume Music" disable="true" onAction="#onResumeMusicClicked"/>
+                <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
+                <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
+                <MenuItem fx:id="startAmbienceItem" text="Start Ambience" onAction="#onStartAmbienceClicked"/>
+                <MenuItem fx:id="resumeAmbienceItem" text="Resume Ambience" disable="true" onAction="#onResumeAmbienceClicked"/>
+                <MenuItem fx:id="pauseAmbienceItem" text="Pause Ambience" disable="true" onAction="#onPauseAmbienceClicked"/>
+                <MenuItem fx:id="stopAmbienceItem" text="Stop Ambience" disable="true" onAction="#onStopAmbienceClicked"/>
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide" onAction="#onUsersGuideClicked"/>
