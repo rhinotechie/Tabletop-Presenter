@@ -36,30 +36,33 @@ import org.json.*;
 
 // Controller class for the TableTopApplication
 public class TabletopController implements Initializable {
-
-    enum SoundType {
-        MUSIC ("Music"),
-        AMBIANCE ("Ambiance"),
-        SOUND_EFFECT("Sound Effects");
-
-        private String directoryName;
-
-        SoundType(String directoryName) {
-            this.directoryName = directoryName;
-        }
-    }
-
+    // Resource types and their corresponding directory names.
+    // USAGE: When specifying directory names for a URL, use the directoryName of ResourceType/SoundType enums
+    // for consistency.
     enum ResourceType {
         SCENE ("Scenes"),
         BACKGROUND ("Backgrounds"),
         FOREGROUND ("Foregrounds"),
         MUSIC ("Music"),
-        AMBIANCE ("Ambience"),
+        AMBIANCE ("Ambiance"),
         SOUND_EFFECT ("Sound Effects");
 
-        private String directoryName;
+        private final String directoryName;
 
         ResourceType(String directoryName) {
+            this.directoryName = directoryName;
+        }
+    }
+
+    // Only the sound-related resources
+    enum SoundType {
+        MUSIC ("Music"),
+        AMBIANCE ("Ambiance"),
+        SOUND_EFFECT("Sound Effects");
+
+        private final String directoryName;
+
+        SoundType(String directoryName) {
             this.directoryName = directoryName;
         }
     }
@@ -81,7 +84,7 @@ public class TabletopController implements Initializable {
     @FXML
     private ListView<String> musicList;
     @FXML
-    public ListView<String> ambienceList;
+    public ListView<String> ambianceList;
     @FXML
     public ListView<String> soundEffectList;
 
@@ -107,13 +110,13 @@ public class TabletopController implements Initializable {
     @FXML
     private MenuItem stopMusicItem;
     @FXML
-    private MenuItem startAmbienceItem;
+    private MenuItem startAmbianceItem;
     @FXML
-    private MenuItem resumeAmbienceItem;
+    private MenuItem resumeAmbianceItem;
     @FXML
-    private MenuItem pauseAmbienceItem;
+    private MenuItem pauseAmbianceItem;
     @FXML
-    private MenuItem stopAmbienceItem;
+    private MenuItem stopAmbianceItem;
     @FXML
     private BorderPane mainBorderPane;
 
@@ -150,9 +153,9 @@ public class TabletopController implements Initializable {
     @FXML
     private ImageView liveForegroundImageView;
 
-    // Media
+    // Sound
     private MediaPlayer musicPlayer;
-    private MediaPlayer ambiencePlayer;
+    private MediaPlayer ambiancePlayer;
     private MediaPlayer soundEffectPlayer;
 
     @Override
@@ -161,7 +164,7 @@ public class TabletopController implements Initializable {
         onRefreshResourcesClicked();
 
         // Enables click behavior for item lists.
-
+        
         sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -185,14 +188,15 @@ public class TabletopController implements Initializable {
                     backgroundList.getSelectionModel().clearSelection();
                     foregroundList.getSelectionModel().clearSelection();
                     musicList.getSelectionModel().clearSelection();
-                    ambienceList.getSelectionModel().clearSelection();
+                    ambianceList.getSelectionModel().clearSelection();
                     soundEffectList.getSelectionModel().clearSelection();
 
-                    // Updates background, foreground, and music from selected scene.
+                    // Updates background, foreground, and sounds from selected scene.
 
                     String sceneName = sceneList.getSelectionModel().getSelectedItem();
                     JSONObject jsonObject;
-                    try (FileReader fileReader = new FileReader("./Scenes/" + sceneName); Scanner scanner = new Scanner(fileReader)){
+                    try (FileReader fileReader = new FileReader("./"+ ResourceType.SCENE.directoryName + "/" + sceneName); 
+                         Scanner scanner = new Scanner(fileReader)){
                         StringBuilder sb = new StringBuilder();
                         while (scanner.hasNextLine()){
                             sb.append(scanner.nextLine());
@@ -208,11 +212,11 @@ public class TabletopController implements Initializable {
                         }
                         if (jsonObject.has("music")) {
                             musicList.getSelectionModel().select((String) jsonObject.get("music"));
-                            playMusic(SoundType.MUSIC);
+                            playSound(SoundType.MUSIC);
                         }
-                        if (jsonObject.has("ambience")){
-                            ambienceList.getSelectionModel().select((String) jsonObject.get("ambience"));
-                            playMusic(SoundType.AMBIANCE);
+                        if (jsonObject.has("ambiance")){
+                            ambianceList.getSelectionModel().select((String) jsonObject.get("ambiance"));
+                            playSound(SoundType.AMBIANCE);
                         }
                     } catch (IOException e) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -251,7 +255,8 @@ public class TabletopController implements Initializable {
                     }
 
                     Image image;
-                    try (FileInputStream fileInputStream = new FileInputStream("./Backgrounds/" + backgroundName)) {
+                    try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.BACKGROUND.directoryName + 
+                            "/" + backgroundName)) {
                         image = new Image(fileInputStream);
                         backgroundImage.setImage(image);
                         if (liveBackgroundImageView != null && !isFrozen){
@@ -272,7 +277,6 @@ public class TabletopController implements Initializable {
         backgroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-            // TODO: Open a context menu for item deletion.
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton() == MouseButton.SECONDARY){
                     onDeleteResource(ResourceType.BACKGROUND);
@@ -295,7 +299,7 @@ public class TabletopController implements Initializable {
                     }
 
                     Image image;
-                    try (FileInputStream fileInputStream = new FileInputStream("./Foregrounds/" + foregroundName)) {
+                    try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.FOREGROUND.directoryName + "/" + foregroundName)) {
                         image = new Image(fileInputStream);
                         foregroundImage.setImage(image);
                         if (liveForegroundImageView != null && !isFrozen){
@@ -336,8 +340,8 @@ public class TabletopController implements Initializable {
             }
         });
 
-        ambienceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        ambienceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        ambianceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        ambianceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
             public void handle(MouseEvent mouseEvent) {
@@ -349,6 +353,21 @@ public class TabletopController implements Initializable {
         });
 
         soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        soundEffectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if (t1 != null){
+                    String soundEffectName = soundEffectList.getSelectionModel().getSelectedItem();
+
+                    // Do nothing since nothing is selected
+                    if (soundEffectName == null){
+                        return;
+                    }
+
+                    playSound(SoundType.SOUND_EFFECT);
+                }
+            }
+        });
         soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
@@ -361,7 +380,7 @@ public class TabletopController implements Initializable {
         });
 
         // Behavior for tweaking presenter appearance.
-
+        
         foregroundScaleSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             // Changes foreground scale of live/preview windows
@@ -369,6 +388,7 @@ public class TabletopController implements Initializable {
                 onRatioSliderChanged();
             }
         });
+        
         colorPicker.setValue(Color.GRAY);
         colorPicker.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -387,196 +407,12 @@ public class TabletopController implements Initializable {
             }
         });
     }
-    
-    // Creates a new instance of specified media and media player and plays it.
-    // USAGE: Use the resource folder name for soundType.
-    private void playMusic(SoundType soundType){
-        try {
-            // Get the sound name depending on the type of sound requested
-            String soundName;
-            switch (soundType){
-                case MUSIC:
-                    clearMediaPlayer(SoundType.MUSIC);
-                    if (!musicList.getSelectionModel().isEmpty()){
-                        soundName = musicList.getSelectionModel().getSelectedItem();
-                        if (soundName == null) return;
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
-                        musicPlayer = new MediaPlayer(media);
-                        musicPlayer.setAutoPlay(false);
-                        musicPlayer.play();
 
-                        // Updates media menu items
-                        startMusicItem.setDisable(false);
-                        pauseMusicItem.setDisable(false);
-                        resumeMusicItem.setDisable(true);
-                        stopMusicItem.setDisable(false);
-                    } else {
-                        return;
-                    }
-                    break;
-                case AMBIANCE:
-                    clearMediaPlayer(SoundType.AMBIANCE);
-                    if (!ambienceList.getSelectionModel().isEmpty()){
-                        soundName = ambienceList.getSelectionModel().getSelectedItem();
-                        if (soundName == null) return;
-
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
-                        ambiencePlayer = new MediaPlayer(media);
-                        ambiencePlayer.setAutoPlay(false);
-                        ambiencePlayer.play();
-
-                        // Updates media menu items
-                        startAmbienceItem.setDisable(false);
-                        pauseAmbienceItem.setDisable(false);
-                        resumeAmbienceItem.setDisable(true);
-                        stopAmbienceItem.setDisable(false);
-                    } else {
-                        return;
-                    }
-                    break;
-                case SOUND_EFFECT:
-                    clearMediaPlayer(SoundType.SOUND_EFFECT);
-                    if (!soundEffectList.getSelectionModel().isEmpty()){
-                        soundName = soundEffectList.getSelectionModel().getSelectedItem();
-                        if (soundName == null) return;
-
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
-                        soundEffectPlayer = new MediaPlayer(media);
-                        soundEffectPlayer.setAutoPlay(false);
-                        soundEffectPlayer.play();
-                    } else {
-                        return;
-                    }
-                    break;
-                default:
-            }
-        } catch (IllegalArgumentException iae){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Music Load Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Unable to load music from project resource folder.");
-            alert.showAndWait();
-        } catch (UnsupportedOperationException | MediaException e){
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Incompatible Music");
-            alert.setHeaderText(null);
-            alert.setContentText("Could not play selected music.");
-            alert.showAndWait();
-        }
-    }
-
-    // If music is playing, music gets paused.
-    private void pauseMusic(SoundType soundType){
-        if (musicPlayer == null){
-            return;
-        }
-
-        switch(musicPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer(SoundType.MUSIC);
-                return;
-            case PLAYING:
-                musicPlayer.pause();
-
-                // Updates media menu items
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(true);
-                resumeMusicItem.setDisable(false);
-                stopMusicItem.setDisable(false);
-
-                break;
-        }
-    }
-
-    // If music is paused, the music continues to play or plays from beginning.
-    private void resumeMusic(SoundType soundType){
-        if (musicPlayer == null){
-            return;
-        }
-
-        switch (musicPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer(SoundType.MUSIC);
-                return;
-            case PAUSED:
-                musicPlayer.play();
-
-                // Updates media menu items
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(false);
-                resumeMusicItem.setDisable(true);
-                stopMusicItem.setDisable(false);
-
-
-                break;
-        }
-    }
-
-    // If music is playing, the music gets stopped.
-    private void stopMusic(SoundType soundType){
-        if (musicPlayer == null){
-            return;
-        }
-
-        switch (musicPlayer.getStatus()){
-            case HALTED:
-            case DISPOSED:
-                // Current media player is unusable.
-                clearMediaPlayer(SoundType.MUSIC);
-                return;
-            case PLAYING:
-            case PAUSED:
-            case STALLED:
-                musicPlayer.stop();
-                clearMediaPlayer(SoundType.MUSIC);
-                break;
-        }
-    }
-
-    // Resets media players and updates menu bar items to initial state
-    public void clearMediaPlayer(SoundType soundType){
-        // Disposes appropriate media player instead of setting them to null for better status checking.
-        switch(soundType){
-            case MUSIC:
-                if (musicPlayer != null){
-                    musicPlayer.dispose();
-                }
-
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(true);
-                resumeMusicItem.setDisable(true);
-                stopMusicItem.setDisable(true);
-
-                break;
-            case AMBIANCE:
-                if (ambiencePlayer != null){
-                    ambiencePlayer.dispose();
-                }
-
-                startAmbienceItem.setDisable(false);
-                pauseAmbienceItem.setDisable(true);
-                resumeAmbienceItem.setDisable(true);
-                stopAmbienceItem.setDisable(true);
-
-                break;
-            case SOUND_EFFECT:
-                if (soundEffectPlayer != null){
-                    soundEffectPlayer.dispose();
-                }
-                break;
-            default:
-        }
-    }
 
     // Reloads the resource lists. Re-selects the items that were unselected.
     // Side-effect: Music restarts on load
     @FXML
-    public void onRefreshResourcesClicked(){
+    private void onRefreshResourcesClicked(){
         // Saves previous selections (if any)
 
         String prevBackground = null;
@@ -594,44 +430,44 @@ public class TabletopController implements Initializable {
             prevMusic = musicList.getSelectionModel().getSelectedItem();
         }
 
-        String prevAmbience = null;
-        if(!ambienceList.getSelectionModel().isEmpty()){
-            prevAmbience = ambienceList.getSelectionModel().getSelectedItem();
+        String prevAmbiance = null;
+        if(!ambianceList.getSelectionModel().isEmpty()){
+            prevAmbiance = ambianceList.getSelectionModel().getSelectedItem();
         }
 
         // Loads resources or makes empty directories if they don't exist.
 
-        File foregroundDir = new File("./Foregrounds");
+        File foregroundDir = new File("./" + ResourceType.FOREGROUND.directoryName);
         if (!foregroundDir.mkdir()) {
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
         }
 
-        File backgroundDir = new File("./Backgrounds");
+        File backgroundDir = new File("./" + ResourceType.BACKGROUND.directoryName);
         if (!backgroundDir.mkdir()) {
             String[] backgrounds = backgroundDir.list();
             backgroundList.getItems().setAll(backgrounds);
         }
 
-        File sceneDir = new File("./Scenes");
+        File sceneDir = new File("./" + ResourceType.SCENE.directoryName);
         if (!sceneDir.mkdir()) {
             String[] scenes = sceneDir.list();
             sceneList.getItems().setAll(scenes);
         }
 
-        File musicDir = new File("./Music");
+        File musicDir = new File("./" + ResourceType.MUSIC.directoryName);
         if (!musicDir.mkdir()) {
             String[] music = musicDir.list();
             musicList.getItems().setAll(music);
         }
 
-        File ambienceDir = new File("./Ambiences");
-        if (!ambienceDir.mkdir()) {
-            String[] ambiences = ambienceDir.list();
-            ambienceList.getItems().setAll(ambiences);
+        File ambianceDir = new File("./" + ResourceType.AMBIANCE.directoryName);
+        if (!ambianceDir.mkdir()) {
+            String[] ambiances = ambianceDir.list();
+            ambianceList.getItems().setAll(ambiances);
         }
 
-        File soundEffectDir = new File("./Sound Effects");
+        File soundEffectDir = new File("./" + ResourceType.SOUND_EFFECT.directoryName);
         if (!soundEffectDir.mkdir()) {
             String[] soundEffects = soundEffectDir.list();
             soundEffectList.getItems().setAll(soundEffects);
@@ -651,15 +487,15 @@ public class TabletopController implements Initializable {
             musicList.getSelectionModel().select(prevMusic);
         }
 
-        if (prevAmbience != null){
-            ambienceList.getSelectionModel().select(prevAmbience);
+        if (prevAmbiance != null){
+            ambianceList.getSelectionModel().select(prevAmbiance);
         }
     }
 
     @FXML
     // When the user selects the import background option in the MenuBar, a file chooser opens and the selected file
     // gets imported into the respective project resource folder.
-    public void onLoadBackground(){
+    private void onLoadBackground(){
         // FileChooser setup
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Import background");
@@ -674,7 +510,7 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./Backgrounds/" + sourceFile.getName());
+            Path destinationPath = Paths.get("./"+ ResourceType.BACKGROUND.directoryName + "/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -710,7 +546,7 @@ public class TabletopController implements Initializable {
     @FXML
     // When the user selects the import foreground option in the MenuBar, a file chooser opens and the selected file
     // gets imported into the respective project resource folder.
-    public void onLoadForeground(){
+    private void onLoadForeground(){
         // FileChooser setup
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Import foreground");
@@ -725,7 +561,7 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./Foregrounds/" + sourceFile.getName());
+            Path destinationPath = Paths.get("./"+ ResourceType.FOREGROUND.directoryName + "/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -761,7 +597,7 @@ public class TabletopController implements Initializable {
     // When the user selects the import music option in the MenuBar, a file chooser opens and the selected file
     // gets imported into the respective project resource folder.
     @FXML
-    public void onLoadMusic(){
+    private void onLoadMusic(){
         // FileChooser setup
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Import music");
@@ -776,7 +612,109 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./Music/" + sourceFile.getName());
+            Path destinationPath = Paths.get("./"+ ResourceType.MUSIC.directoryName + "/" + sourceFile.getName());
+            Files.copy(sourcePath, destinationPath);
+
+            // Refreshes resource so the new file can be seen.
+            onRefreshResourcesClicked();
+        } catch (AccessDeniedException ade) {
+            ade.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File Access Denied");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "Check the permissions for source and destination and make sure your anti-virus " +
+                    "is not denying access. You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        } catch(FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File exists");
+            alert.setHeaderText(null);
+            alert.setContentText("A file with that name already exists in the resource directory.");
+            alert.showAndWait();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        }
+    }
+
+    // When the user selects the import ambiance option in the MenuBar, a file chooser opens and the selected file
+    // gets imported into the respective project resource folder.
+    @FXML
+    private void onLoadAmbiance(){
+        // FileChooser setup
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import ambiance");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Audio Files", "*.wav", "*.mp3")
+        );
+
+        // Displays chooser and copies file to resource folder.
+        try {
+            File sourceFile = fileChooser.showOpenDialog(hostingStage);
+            if (sourceFile == null){
+                return;
+            }
+            Path sourcePath = Path.of(sourceFile.getPath());
+            Path destinationPath = Paths.get("./"+ ResourceType.AMBIANCE.directoryName + "/" + sourceFile.getName());
+            Files.copy(sourcePath, destinationPath);
+
+            // Refreshes resource so the new file can be seen.
+            onRefreshResourcesClicked();
+        } catch (AccessDeniedException ade) {
+            ade.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File Access Denied");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "Check the permissions for source and destination and make sure your anti-virus " +
+                    "is not denying access. You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        } catch(FileAlreadyExistsException fileAlreadyExistsException){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("File exists");
+            alert.setHeaderText(null);
+            alert.setContentText("A file with that name already exists in the resource directory.");
+            alert.showAndWait();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a copy of the file into the resource directory. " +
+                    "You can copy resources directly into the project resource folder "
+                    + "then click 'File > Reload resources'");
+            alert.showAndWait();
+        }
+    }
+
+    // When the user selects the import sound effect option in the MenuBar, a file chooser opens and the selected file
+    // gets imported into the respective project resource folder.
+    @FXML
+    private void onLoadSoundEffect(){
+        // FileChooser setup
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Sound Effect");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Audio Files", "*.wav", "*.mp3")
+        );
+
+        // Displays chooser and copies file to resource folder.
+        try {
+            File sourceFile = fileChooser.showOpenDialog(hostingStage);
+            if (sourceFile == null){
+                return;
+            }
+            Path sourcePath = Path.of(sourceFile.getPath());
+            Path destinationPath = Paths.get("./"+ ResourceType.SOUND_EFFECT.directoryName + "/" + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -812,7 +750,7 @@ public class TabletopController implements Initializable {
     @FXML
     // When the user selects the Start Presenter option in the MenuBar, the live window opens and mirrors the preview
     // window, updates MenuBar items, and updates status bar.
-    public void onStartPresenter(){
+    private void onStartPresenter(){
         if (liveStage == null){
             // Stage configuration
             liveStage = new Stage();
@@ -891,7 +829,7 @@ public class TabletopController implements Initializable {
     // When the presenter window is open and the user ends the presentation either by closing the window or selecting
     // the End Presentation option in the MenuBar, the window is closed (if open), only the Start Presentation option
     // is enabled in the MenuBar, and the StatusBar is updated. Clears frozen status.
-    public void onEndPresenter(){
+    private void onEndPresenter(){
         if (liveStage != null){
             liveStage.close();
             liveStage = null;
@@ -914,7 +852,7 @@ public class TabletopController implements Initializable {
     @FXML
     // When the presenter window is open and the user selects Freeze Presentation in the MenuBar, the live window no
     // longer updates whenever the preview window is updated until it is unfrozen and a frozen status text is displayed.
-    public void onFreezePresenter(){
+    private void onFreezePresenter(){
         this.isFrozen = true;
 
         // Reveals frozen text in the top left corner
@@ -930,7 +868,7 @@ public class TabletopController implements Initializable {
     @FXML
     // When the presenter window is open and the user selects Unfreeze Presentation in the MenuBar, the live window
     // immediately starts mirroring the preview window.
-    public void onUnFreezePresenter(){
+    private void onUnFreezePresenter(){
         this.isFrozen = false;
 
         // Hides frozen status text
@@ -956,7 +894,7 @@ public class TabletopController implements Initializable {
 
     @FXML
     // When user clicks About item in MenuBar, information about the program is displayed as a dialog.
-    public void onAboutClicked(){
+    private void onAboutClicked(){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         dialog.setTitle("About");
@@ -971,7 +909,7 @@ public class TabletopController implements Initializable {
 
     @FXML
     // When user clicks About item in MenuBar, a user's guide about the program is displayed as a dialog.
-    public void onUsersGuideClicked(){
+    private void onUsersGuideClicked(){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         dialog.setTitle("User's Guide");
@@ -990,7 +928,7 @@ public class TabletopController implements Initializable {
 
     // Clears preview and live background and unselects the resource from the list.
     @FXML
-    public void onBackgroundClearedClicked(){
+    private void onBackgroundClearedClicked(){
         backgroundImage.setImage(null);
         backgroundList.getSelectionModel().clearSelection();
 
@@ -1001,7 +939,7 @@ public class TabletopController implements Initializable {
 
     // Clears preview and live foreground and unselects the resource from the list.
     @FXML
-    public void onForegroundClearedClicked(){
+    private void onForegroundClearedClicked(){
         foregroundImage.setImage(null);
         foregroundList.getSelectionModel().clearSelection();
 
@@ -1012,7 +950,7 @@ public class TabletopController implements Initializable {
 
     // Clears preview and live backgrounds, foregrounds, stops music, and unselects the resources from the lists.
     @FXML
-    public void onAllClearedClicked(){
+    private void onAllClearedClicked(){
         backgroundImage.setImage(null);
         backgroundList.getSelectionModel().clearSelection();
         foregroundImage.setImage(null);
@@ -1028,42 +966,24 @@ public class TabletopController implements Initializable {
         sceneList.getSelectionModel().clearSelection();
 
         musicList.getSelectionModel().clearSelection();
-        ambienceList.getSelectionModel().clearSelection();
+        ambianceList.getSelectionModel().clearSelection();
         soundEffectList.getSelectionModel().clearSelection();
-        if (musicPlayer != null){
-            this.onPauseMusicClicked();
-        }
-    }
-
-    // When the user clicks 'Start Music' in menu bar, music starts.
-    @FXML
-    public void onStartMusicClicked() {
-        playMusic(SoundType.MUSIC);
-    }
-
-    // When the user clicks 'Resume Music' in menu bar, music resumes.
-    @FXML
-    public void onResumeMusicClicked() {
-        resumeMusic(SoundType.MUSIC);
-    }
-
-    // When the user clicks 'Stop Music' in menu bar, music stops.
-    @FXML
-    public void onStopMusicClicked() {
-        stopMusic(SoundType.MUSIC);
+        clearMediaPlayer(SoundType.MUSIC);
+        clearMediaPlayer(SoundType.AMBIANCE);
+        clearMediaPlayer(SoundType.SOUND_EFFECT);
     }
 
     // When the user clicks 'Pause Music' in menu bar, music pauses.
     @FXML
-    public void onPauseMusicClicked(){
-        pauseMusic(SoundType.MUSIC);
+    private void onPauseMusicClicked(){
+        pauseSound(SoundType.MUSIC);
     }
 
     @FXML
-    public void onSaveSceneClicked(){
+    private void onSaveSceneClicked(){
         // Alert the user that nothing is selected so the scene is not saved.
         if (backgroundList.getSelectionModel().isEmpty() && foregroundList.getSelectionModel().isEmpty() &&
-                musicList.getSelectionModel().isEmpty() && ambienceList.getSelectionModel().isEmpty()){
+                musicList.getSelectionModel().isEmpty() && ambianceList.getSelectionModel().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Nothing Selected");
             alert.setHeaderText(null);
@@ -1086,9 +1006,9 @@ public class TabletopController implements Initializable {
         {
             jsonMap.put("music", musicList.getSelectionModel().getSelectedItem());
         }
-        if (!ambienceList.getSelectionModel().isEmpty())
+        if (!ambianceList.getSelectionModel().isEmpty())
         {
-            jsonMap.put("ambience", ambienceList.getSelectionModel().getSelectedItem());
+            jsonMap.put("ambiance", ambianceList.getSelectionModel().getSelectedItem());
         }
         JSONObject jsonObject = new JSONObject(jsonMap);
 
@@ -1137,7 +1057,7 @@ public class TabletopController implements Initializable {
 
     // Displays dialog for naming a new scene.
     @FXML
-    public String showNewSceneDialog(){
+    private String showNewSceneDialog(){
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         FXMLLoader fxmlLoader = new FXMLLoader();
@@ -1166,7 +1086,7 @@ public class TabletopController implements Initializable {
 
     @FXML
     // Displays file deletion dialog and deletes the target file from project directory.
-    public void onDeleteResource(ResourceType resourceType){
+    private void onDeleteResource(ResourceType resourceType){
         switch (resourceType){
             case MUSIC:
                 freePlayerBeforeDeletion(SoundType.MUSIC);
@@ -1195,7 +1115,7 @@ public class TabletopController implements Initializable {
                 mediaPlayer = musicPlayer;
                 break;
             case AMBIANCE:
-                mediaPlayer = ambiencePlayer;
+                mediaPlayer = ambiancePlayer;
                 break;
             case SOUND_EFFECT:
                 mediaPlayer = soundEffectPlayer;
@@ -1233,13 +1153,7 @@ public class TabletopController implements Initializable {
                 tryAgainAlert.showAndWait();
 
                 // Disposes the player so the user can try again and delete the file.
-                if (soundType == SoundType.MUSIC){
-                    clearMediaPlayer(soundType);
-                } else if (soundType == SoundType.AMBIANCE) {
-                    clearMediaPlayer(SoundType.AMBIANCE);
-                } else {
-                    clearMediaPlayer(SoundType.SOUND_EFFECT);
-                }
+                clearMediaPlayer(soundType);
         }
     }
 
@@ -1261,6 +1175,9 @@ public class TabletopController implements Initializable {
         // Get the respective listView
         ListView<String> listView;
         switch(resourceType) {
+            case SCENE:
+                listView = sceneList;
+                break;
             case BACKGROUND:
                 listView = backgroundList;
                 break;
@@ -1271,13 +1188,10 @@ public class TabletopController implements Initializable {
                 listView = musicList;
                 break;
             case AMBIANCE:
-                listView = ambienceList;
+                listView = ambianceList;
                 break;
             case SOUND_EFFECT:
                 listView = soundEffectList;
-                break;
-            case SCENE:
-                listView = sceneList;
                 break;
             default:
                 return;
@@ -1298,7 +1212,7 @@ public class TabletopController implements Initializable {
                             musicList.getSelectionModel().clearSelection();
                             break;
                         case AMBIANCE:
-                            ambienceList.getSelectionModel().clearSelection();
+                            ambianceList.getSelectionModel().clearSelection();
                             break;
                         case SOUND_EFFECT:
                             soundEffectList.getSelectionModel().clearSelection();
@@ -1335,7 +1249,7 @@ public class TabletopController implements Initializable {
 
     @FXML
     // Toggle stretch/non-stretched backgrounds for preview and live windows.
-    public void onStretchClicked(){
+    private void onStretchClicked(){
         backgroundImage.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
         if (liveBackgroundImageView != null && !isFrozen){
             liveBackgroundImageView.setPreserveRatio(!stretchBackgroundCheckBox.isSelected());
@@ -1344,7 +1258,7 @@ public class TabletopController implements Initializable {
 
     @FXML
     // Changes scale of foreground image according to slider
-    public void onRatioSliderChanged(){
+    private void onRatioSliderChanged(){
         if (foregroundImage != null){
             foregroundImage.setScaleX(foregroundScaleSlider.getValue());
             foregroundImage.setScaleY(foregroundScaleSlider.getValue());
@@ -1357,23 +1271,269 @@ public class TabletopController implements Initializable {
 
     // Closes application when menu Exit option is clicked.
     @FXML
-    public void onExitClicked(){
+    private void onExitClicked(){
         Platform.exit();
     }
 
+    // When the user clicks 'Start Music' in menu bar, music starts.
     @FXML
-    public void onStartAmbienceClicked(ActionEvent actionEvent) {
+    private void onStartMusicClicked() {
+        playSound(SoundType.MUSIC);
+    }
+
+    // When the user clicks 'Resume Music' in menu bar, music resumes.
+    @FXML
+    private void onResumeMusicClicked() {
+        resumeSound(SoundType.MUSIC);
+    }
+
+    // When the user clicks 'Stop Music' in menu bar, music stops.
+    @FXML
+    private void onStopMusicClicked() {
+        stopSound(SoundType.MUSIC);
     }
 
     @FXML
-    public void onResumeAmbienceClicked(ActionEvent actionEvent) {
+    private void onStartAmbianceClicked() {
+        playSound(SoundType.AMBIANCE);
     }
 
     @FXML
-    public void onPauseAmbienceClicked(ActionEvent actionEvent) {
+    private void onResumeAmbianceClicked() {
+        resumeSound(SoundType.AMBIANCE);
     }
 
     @FXML
-    public void onStopAmbienceClicked(ActionEvent actionEvent) {
+    private void onPauseAmbianceClicked() {
+        pauseSound(SoundType.AMBIANCE);
+    }
+
+    @FXML
+    private void onStopAmbianceClicked(ActionEvent actionEvent) {
+        stopSound(SoundType.AMBIANCE);
+    }
+
+    // Creates a new instance of specified media and media player and plays it.
+    private void playSound(SoundType soundType){
+        try {
+            String soundName;
+            switch (soundType){
+                case MUSIC:
+                    clearMediaPlayer(SoundType.MUSIC);
+                    if (!musicList.getSelectionModel().isEmpty()){
+                        soundName = musicList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        musicPlayer = new MediaPlayer(media);
+                        musicPlayer.setAutoPlay(false);
+                        musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                        musicPlayer.play();
+
+                        // Updates media menu items
+                        startMusicItem.setDisable(false);
+                        pauseMusicItem.setDisable(false);
+                        resumeMusicItem.setDisable(true);
+                        stopMusicItem.setDisable(false);
+                    } else {
+                        return;
+                    }
+                    break;
+                case AMBIANCE:
+                    clearMediaPlayer(SoundType.AMBIANCE);
+                    if (!ambianceList.getSelectionModel().isEmpty()){
+                        soundName = ambianceList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        ambiancePlayer = new MediaPlayer(media);
+                        ambiancePlayer.setAutoPlay(false);
+                        ambiancePlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                        ambiancePlayer.play();
+
+                        // Updates media menu items
+                        startAmbianceItem.setDisable(false);
+                        pauseAmbianceItem.setDisable(false);
+                        resumeAmbianceItem.setDisable(true);
+                        stopAmbianceItem.setDisable(false);
+                    } else {
+                        return;
+                    }
+                    break;
+                case SOUND_EFFECT:
+                    clearMediaPlayer(SoundType.SOUND_EFFECT);
+                    if (!soundEffectList.getSelectionModel().isEmpty()){
+                        soundName = soundEffectList.getSelectionModel().getSelectedItem();
+                        if (soundName == null) return;
+
+                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        soundEffectPlayer = new MediaPlayer(media);
+                        soundEffectPlayer.setAutoPlay(false);
+                        soundEffectPlayer.play();
+                    } else {
+                        return;
+                    }
+                    break;
+                default:
+            }
+        } catch (IllegalArgumentException iae){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Music Load Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to load music from project resource folder.");
+            alert.showAndWait();
+        } catch (UnsupportedOperationException | MediaException e){
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Incompatible Music");
+            alert.setHeaderText(null);
+            alert.setContentText("Could not play selected music.");
+            alert.showAndWait();
+        }
+    }
+
+    // If sound is playing, the sound gets paused.
+    private void pauseSound(SoundType soundType){
+        MediaPlayer mediaPlayer;
+        switch(soundType){
+            case MUSIC:
+                mediaPlayer = musicPlayer;
+                break;
+            case AMBIANCE:
+                mediaPlayer = ambiancePlayer;
+                break;
+            default:
+                return; // Don't pause sound effects
+        }
+
+        if (mediaPlayer == null){
+            return;
+        }
+
+        switch(mediaPlayer.getStatus()){
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(soundType);
+                return;
+            case PLAYING:
+                mediaPlayer.pause();
+
+                // Updates media menu items
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(false);
+                stopMusicItem.setDisable(false);
+                break;
+        }
+    }
+
+    // If music is paused, the music continues to play or plays from beginning.
+    private void resumeSound(SoundType soundType){
+        MediaPlayer mediaPlayer;
+        switch(soundType){
+            case MUSIC:
+                mediaPlayer = musicPlayer;
+                break;
+            case AMBIANCE:
+                mediaPlayer = ambiancePlayer;
+                break;
+            default:
+                return; // Don't resume sound effects
+        }
+
+        if (mediaPlayer == null) return;
+
+        switch (mediaPlayer.getStatus()) {
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(soundType);
+                return;
+            case PAUSED:
+                mediaPlayer.play();
+
+                // Updates proper menu items
+                if (soundType == SoundType.MUSIC) {
+                    startMusicItem.setDisable(false);
+                    pauseMusicItem.setDisable(false);
+                    resumeMusicItem.setDisable(true);
+                    stopMusicItem.setDisable(false);
+                } else {
+                    startAmbianceItem.setDisable(false);
+                    pauseAmbianceItem.setDisable(false);
+                    resumeAmbianceItem.setDisable(true);
+                    stopAmbianceItem.setDisable(false);
+                }
+
+                break;
+        }
+    }
+
+    // If music is playing, the music gets stopped.
+    private void stopSound(SoundType soundType){
+        MediaPlayer mediaPlayer;
+        switch (soundType){
+            case MUSIC:
+                mediaPlayer = musicPlayer;
+                break;
+            case AMBIANCE:
+                mediaPlayer = ambiancePlayer;
+                break;
+            default:
+                return; // Don't stop sound effects
+        }
+
+        if (mediaPlayer == null){
+            return;
+        }
+
+        switch (mediaPlayer.getStatus()){
+            case HALTED:
+            case DISPOSED:
+                // Current media player is unusable.
+                clearMediaPlayer(soundType);
+                return;
+            case PLAYING:
+            case PAUSED:
+            case STALLED:
+                mediaPlayer.stop();
+                clearMediaPlayer(soundType);
+                break;
+        }
+    }
+
+    // Resets media players and updates menu bar items to initial state
+    private void clearMediaPlayer(SoundType soundType){
+        // Disposes appropriate media player instead of setting them to null for better status checking.
+        switch(soundType){
+            case MUSIC:
+                if (musicPlayer != null){
+                    musicPlayer.dispose();
+                }
+
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(true);
+
+                break;
+            case AMBIANCE:
+                if (ambiancePlayer != null){
+                    ambiancePlayer.dispose();
+                }
+
+                startAmbianceItem.setDisable(false);
+                pauseAmbianceItem.setDisable(true);
+                resumeAmbianceItem.setDisable(true);
+                stopAmbianceItem.setDisable(true);
+
+                break;
+            case SOUND_EFFECT:
+                if (soundEffectPlayer != null){
+                    soundEffectPlayer.dispose();
+                }
+                break;
+            default:
+        }
     }
 }

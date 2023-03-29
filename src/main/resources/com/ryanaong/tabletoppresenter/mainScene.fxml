@@ -30,6 +30,8 @@
                 <MenuItem text="Import background" onAction="#onLoadBackground"/>
                 <MenuItem text="Import foreground" onAction="#onLoadForeground"/>
                 <MenuItem text="Import music" onAction="#onLoadMusic"/>
+                <MenuItem text="Import ambiance" onAction="#onLoadAmbiance"/>
+                <MenuItem text="Import sound effect" onAction="#onLoadSoundEffect"/>
                 <MenuItem text="Reload resources" onAction="#onRefreshResourcesClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
@@ -53,10 +55,10 @@
                 <MenuItem fx:id="resumeMusicItem" text="Resume Music" disable="true" onAction="#onResumeMusicClicked"/>
                 <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
                 <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
-                <MenuItem fx:id="startAmbienceItem" text="Start Ambience" onAction="#onStartAmbienceClicked"/>
-                <MenuItem fx:id="resumeAmbienceItem" text="Resume Ambience" disable="true" onAction="#onResumeAmbienceClicked"/>
-                <MenuItem fx:id="pauseAmbienceItem" text="Pause Ambience" disable="true" onAction="#onPauseAmbienceClicked"/>
-                <MenuItem fx:id="stopAmbienceItem" text="Stop Ambience" disable="true" onAction="#onStopAmbienceClicked"/>
+                <MenuItem fx:id="startAmbianceItem" text="Start Ambience" onAction="#onStartAmbianceClicked"/>
+                <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambience" disable="true" onAction="#onResumeAmbianceClicked"/>
+                <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambience" disable="true" onAction="#onPauseAmbianceClicked"/>
+                <MenuItem fx:id="stopAmbianceItem" text="Stop Ambience" disable="true" onAction="#onStopAmbianceClicked"/>
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide" onAction="#onUsersGuideClicked"/>
