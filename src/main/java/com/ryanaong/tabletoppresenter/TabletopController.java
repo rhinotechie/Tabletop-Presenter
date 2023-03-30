@@ -1,7 +1,6 @@
 package com.ryanaong.tabletoppresenter;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -38,8 +37,11 @@ import org.json.*;
 // Controller class for the TableTopApplication
 public class TabletopController implements Initializable {
 
+
+    // USAGE: RESOURCE_DIRECTORY + your sub-path
     public static final String RESOURCE_DIRECTORY = "." + FileSystems.getDefault().getSeparator() + "Resources" +
             FileSystems.getDefault().getSeparator();
+
     public static final String systemSeparator = FileSystems.getDefault().getSeparator();
 
     // Resource types and their corresponding directory names.
@@ -984,7 +986,7 @@ public class TabletopController implements Initializable {
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         dialog.setTitle("About");
         dialog.setContentText("Tabletop Presenter by Ryan Ong\n" +
-                "Version 1.3\n" +
+                "Version 1.4\n" +
                 "https://github.com/rhinotechie/Tabletop-Presenter.git");
 
         // Adds buttons to the dialog pane (since buttons can't be in the fxml file).
@@ -999,9 +1001,9 @@ public class TabletopController implements Initializable {
         dialog.initOwner(mainBorderPane.getScene().getWindow());
         dialog.setTitle("User's Guide");
         dialog.setContentText(
-                "Import background/foreground images and music by either using 'File > Import [Resource Type]'" +
-                        "or copy resources directly to the program resource directories.\n\n" +
-                "Select up to one background, one foreground, and music for a scene.\n\n" +
+                "Import background/foreground images and music/ambiance/audio by either using 'File > Import [Resource Type]'" +
+                        "or copy resources directly to the program resource sub-directories.\n\n" +
+                "Select up to one background, one foreground, one audio, and one ambiance for a scene.\n\n" +
                 "Choose 'Presenter > Start Presentation' to open the presenter window for your secondary monitor.\n\n" +
                 "Selecting a resource updates the live window unless you select 'Presenter > Freeze presentation'.\n\n" +
                 "Save the preview screen's background, foreground and/or music as a scene with 'Scene > Save scene'");
@@ -1434,6 +1436,7 @@ public class TabletopController implements Initializable {
             switch (soundType){
                 case MUSIC:
                     clearMediaPlayer(SoundType.MUSIC);
+
                     if (!musicList.getSelectionModel().isEmpty()){
                         soundName = musicList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
@@ -1446,7 +1449,7 @@ public class TabletopController implements Initializable {
                         musicPlayer.play();
 
                         // Updates media menu items
-                        startMusicItem.setDisable(false);
+                        startMusicItem.setDisable(true);
                         pauseMusicItem.setDisable(false);
                         resumeMusicItem.setDisable(true);
                         stopMusicItem.setDisable(false);
@@ -1461,10 +1464,10 @@ public class TabletopController implements Initializable {
                     break;
                 case AMBIANCE:
                     clearMediaPlayer(SoundType.AMBIANCE);
+
                     if (!ambianceList.getSelectionModel().isEmpty()){
                         soundName = ambianceList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
-
                         Media media = new Media(new File(RESOURCE_DIRECTORY + soundType.directoryName +
                                 systemSeparator + soundName).toURI().toString());
                         ambiancePlayer = new MediaPlayer(media);
@@ -1474,7 +1477,7 @@ public class TabletopController implements Initializable {
                         ambiancePlayer.play();
 
                         // Updates media menu items
-                        startAmbianceItem.setDisable(false);
+                        startAmbianceItem.setDisable(true);
                         pauseAmbianceItem.setDisable(false);
                         resumeAmbianceItem.setDisable(true);
                         stopAmbianceItem.setDisable(false);
@@ -1489,10 +1492,10 @@ public class TabletopController implements Initializable {
                     break;
                 case SOUND_EFFECT:
                     clearMediaPlayer(SoundType.SOUND_EFFECT);
+
                     if (!soundEffectList.getSelectionModel().isEmpty()){
                         soundName = soundEffectList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
-
                         Media media = new Media(new File(RESOURCE_DIRECTORY + soundType.directoryName +
                                 systemSeparator + soundName).toURI().toString());
                         soundEffectPlayer = new MediaPlayer(media);
@@ -1508,16 +1511,16 @@ public class TabletopController implements Initializable {
             }
         } catch (IllegalArgumentException iae){
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Music Load Error");
+            alert.setTitle("Sound Load Error");
             alert.setHeaderText(null);
-            alert.setContentText("Unable to load music from project resource folder.");
+            alert.setContentText("Unable to load sound from project resource folder.");
             alert.showAndWait();
         } catch (UnsupportedOperationException | MediaException e){
             e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Incompatible Music");
+            alert.setTitle("Incompatible Sound");
             alert.setHeaderText(null);
-            alert.setContentText("Could not play selected music.");
+            alert.setContentText("Could not play selected sound.");
             alert.showAndWait();
         }
     }
@@ -1537,6 +1540,18 @@ public class TabletopController implements Initializable {
         }
 
         if (mediaPlayer == null){
+            // Resets media menu items
+            if (soundType == SoundType.MUSIC){
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(true);
+            } else {
+                startAmbianceItem.setDisable(false);
+                pauseAmbianceItem.setDisable(true);
+                resumeAmbianceItem.setDisable(true);
+                stopAmbianceItem.setDisable(true);
+            }
             return;
         }
 
@@ -1580,7 +1595,21 @@ public class TabletopController implements Initializable {
                 return; // Don't resume sound effects
         }
 
-        if (mediaPlayer == null) return;
+        if (mediaPlayer == null) {
+            // Resets proper menu items
+            if (soundType == SoundType.MUSIC) {
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(true);
+            } else {
+                startAmbianceItem.setDisable(false);
+                pauseAmbianceItem.setDisable(true);
+                resumeAmbianceItem.setDisable(true);
+                stopAmbianceItem.setDisable(true);
+            }
+            return;
+        }
 
         switch (mediaPlayer.getStatus()) {
             case HALTED:
@@ -1623,6 +1652,18 @@ public class TabletopController implements Initializable {
         }
 
         if (mediaPlayer == null){
+            // Resets proper menu items
+            if (soundType == SoundType.MUSIC) {
+                startMusicItem.setDisable(false);
+                pauseMusicItem.setDisable(true);
+                resumeMusicItem.setDisable(true);
+                stopMusicItem.setDisable(true);
+            } else {
+                startAmbianceItem.setDisable(false);
+                pauseAmbianceItem.setDisable(true);
+                resumeAmbianceItem.setDisable(true);
+                stopAmbianceItem.setDisable(true);
+            }
             return;
         }
 
@@ -1636,18 +1677,32 @@ public class TabletopController implements Initializable {
             case PAUSED:
             case STALLED:
                 mediaPlayer.stop();
-                clearMediaPlayer(soundType);
+
+                // Updates proper menu items
+                if (soundType == SoundType.MUSIC) {
+                    startMusicItem.setDisable(false);
+                    pauseMusicItem.setDisable(true);
+                    resumeMusicItem.setDisable(true);
+                    stopMusicItem.setDisable(true);
+                } else {
+                    startAmbianceItem.setDisable(false);
+                    pauseAmbianceItem.setDisable(true);
+                    resumeAmbianceItem.setDisable(true);
+                    stopAmbianceItem.setDisable(true);
+                }
+
+                //clearMediaPlayer(soundType);
                 break;
         }
     }
 
-    // Resets media players and updates menu bar items to initial state
+    // Disposes media player and updates menu bar items to initial state
     private void clearMediaPlayer(SoundType soundType){
-        // Disposes appropriate media player instead of setting them to null for better status checking.
         switch(soundType){
             case MUSIC:
                 if (musicPlayer != null){
                     musicPlayer.dispose();
+                    musicPlayer = null;
                 }
 
                 startMusicItem.setDisable(false);
@@ -1659,6 +1714,7 @@ public class TabletopController implements Initializable {
             case AMBIANCE:
                 if (ambiancePlayer != null){
                     ambiancePlayer.dispose();
+                    ambiancePlayer = null;
                 }
 
                 startAmbianceItem.setDisable(false);
@@ -1670,6 +1726,7 @@ public class TabletopController implements Initializable {
             case SOUND_EFFECT:
                 if (soundEffectPlayer != null){
                     soundEffectPlayer.dispose();
+                    soundEffectPlayer = null;
                 }
                 break;
             default:
