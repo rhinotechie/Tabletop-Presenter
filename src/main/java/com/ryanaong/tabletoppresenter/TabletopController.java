@@ -37,6 +37,11 @@ import org.json.*;
 
 // Controller class for the TableTopApplication
 public class TabletopController implements Initializable {
+
+    public static final String RESOURCE_DIRECTORY = "." + FileSystems.getDefault().getSeparator() + "Resources" +
+            FileSystems.getDefault().getSeparator();
+    public static final String systemSeparator = FileSystems.getDefault().getSeparator();
+
     // Resource types and their corresponding directory names.
     // USAGE: When specifying directory names for a URL, use the directoryName of ResourceType/SoundType enums
     // for consistency.
@@ -212,7 +217,7 @@ public class TabletopController implements Initializable {
 
                         String sceneName = sceneList.getSelectionModel().getSelectedItem();
                         JSONObject jsonObject;
-                        try (FileReader fileReader = new FileReader("./" + ResourceType.SCENE.directoryName + "/" + sceneName);
+                        try (FileReader fileReader = new FileReader(RESOURCE_DIRECTORY + ResourceType.SCENE.directoryName + "\\" + sceneName);
                              Scanner scanner = new Scanner(fileReader)) {
                             StringBuilder sb = new StringBuilder();
                             while (scanner.hasNextLine()) {
@@ -263,8 +268,8 @@ public class TabletopController implements Initializable {
                         }
 
                         Image image;
-                        try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.BACKGROUND.directoryName +
-                                "/" + backgroundName)) {
+                        try (FileInputStream fileInputStream = new FileInputStream(RESOURCE_DIRECTORY + ResourceType.BACKGROUND.directoryName +
+                                systemSeparator + backgroundName)) {
                             image = new Image(fileInputStream);
                             backgroundImage.setImage(image);
                             if (liveBackgroundImageView != null && !isFrozen) {
@@ -307,7 +312,8 @@ public class TabletopController implements Initializable {
                         }
 
                         Image image;
-                        try (FileInputStream fileInputStream = new FileInputStream("./" + ResourceType.FOREGROUND.directoryName + "/" + foregroundName)) {
+                        try (FileInputStream fileInputStream = new FileInputStream(RESOURCE_DIRECTORY +
+                                ResourceType.FOREGROUND.directoryName + systemSeparator + foregroundName)) {
                             image = new Image(fileInputStream);
                             foregroundImage.setImage(image);
                             if (liveForegroundImageView != null && !isFrozen) {
@@ -495,39 +501,54 @@ public class TabletopController implements Initializable {
             prevAmbiance = ambianceList.getSelectionModel().getSelectedItem();
         }
 
+        // Creates main resource folder
+        File resourcesDir = new File(RESOURCE_DIRECTORY);
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            resourcesDir.mkdir();
+        } catch (SecurityException securityException){
+            securityException.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Program Folder Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to create a folder for project resources due to a security exception. " +
+                    "Maybe you don't have permissions or anti-virus software is blocking this?");
+            alert.showAndWait();
+        }
+
         // Loads resources or makes empty directories if they don't exist.
 
-        File foregroundDir = new File("./" + ResourceType.FOREGROUND.directoryName);
+        File foregroundDir = new File(RESOURCE_DIRECTORY + ResourceType.FOREGROUND.directoryName);
         if (!foregroundDir.mkdir()) {
             String[] foregrounds = foregroundDir.list();
             foregroundList.getItems().setAll(foregrounds);
         }
 
-        File backgroundDir = new File("./" + ResourceType.BACKGROUND.directoryName);
+        File backgroundDir = new File(RESOURCE_DIRECTORY + ResourceType.BACKGROUND.directoryName);
         if (!backgroundDir.mkdir()) {
             String[] backgrounds = backgroundDir.list();
             backgroundList.getItems().setAll(backgrounds);
         }
 
-        File sceneDir = new File("./" + ResourceType.SCENE.directoryName);
+        File sceneDir = new File(RESOURCE_DIRECTORY + ResourceType.SCENE.directoryName);
         if (!sceneDir.mkdir()) {
             String[] scenes = sceneDir.list();
             sceneList.getItems().setAll(scenes);
         }
 
-        File musicDir = new File("./" + ResourceType.MUSIC.directoryName);
+        File musicDir = new File(RESOURCE_DIRECTORY + ResourceType.MUSIC.directoryName);
         if (!musicDir.mkdir()) {
             String[] music = musicDir.list();
             musicList.getItems().setAll(music);
         }
 
-        File ambianceDir = new File("./" + ResourceType.AMBIANCE.directoryName);
+        File ambianceDir = new File(RESOURCE_DIRECTORY + ResourceType.AMBIANCE.directoryName);
         if (!ambianceDir.mkdir()) {
             String[] ambiances = ambianceDir.list();
             ambianceList.getItems().setAll(ambiances);
         }
 
-        File soundEffectDir = new File("./" + ResourceType.SOUND_EFFECT.directoryName);
+        File soundEffectDir = new File(RESOURCE_DIRECTORY + ResourceType.SOUND_EFFECT.directoryName);
         if (!soundEffectDir.mkdir()) {
             String[] soundEffects = soundEffectDir.list();
             soundEffectList.getItems().setAll(soundEffects);
@@ -570,7 +591,8 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./"+ ResourceType.BACKGROUND.directoryName + "/" + sourceFile.getName());
+            Path destinationPath = Paths.get(RESOURCE_DIRECTORY + ResourceType.BACKGROUND.directoryName +
+                    systemSeparator + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -621,7 +643,8 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./"+ ResourceType.FOREGROUND.directoryName + "/" + sourceFile.getName());
+            Path destinationPath = Paths.get(RESOURCE_DIRECTORY + ResourceType.FOREGROUND.directoryName +
+                    systemSeparator + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -672,7 +695,7 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./"+ ResourceType.MUSIC.directoryName + "/" + sourceFile.getName());
+            Path destinationPath = Paths.get(RESOURCE_DIRECTORY + ResourceType.MUSIC.directoryName + systemSeparator + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -723,7 +746,8 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./"+ ResourceType.AMBIANCE.directoryName + "/" + sourceFile.getName());
+            Path destinationPath = Paths.get(RESOURCE_DIRECTORY + ResourceType.AMBIANCE.directoryName +
+                    systemSeparator + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -774,7 +798,8 @@ public class TabletopController implements Initializable {
                 return;
             }
             Path sourcePath = Path.of(sourceFile.getPath());
-            Path destinationPath = Paths.get("./"+ ResourceType.SOUND_EFFECT.directoryName + "/" + sourceFile.getName());
+            Path destinationPath = Paths.get(RESOURCE_DIRECTORY + ResourceType.SOUND_EFFECT.directoryName +
+                    systemSeparator + sourceFile.getName());
             Files.copy(sourcePath, destinationPath);
 
             // Refreshes resource so the new file can be seen.
@@ -1080,7 +1105,8 @@ public class TabletopController implements Initializable {
 
         // Creates a new file and writes the json contents to it.
         try {
-            File newFile = new File(".\\Scenes\\" + sceneFileName + ".json");
+            File newFile = new File(RESOURCE_DIRECTORY + ResourceType.SCENE.directoryName + systemSeparator +
+                    sceneFileName + ".json");
             if (!newFile.createNewFile()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("File creation error");
@@ -1272,7 +1298,8 @@ public class TabletopController implements Initializable {
 
         if (result.isPresent() && result.get() == ButtonType.YES){
             try {
-                Files.delete(Path.of("./" + resourceType.directoryName + "/" + listView.getSelectionModel().getSelectedItem()));
+                Files.delete(Path.of(RESOURCE_DIRECTORY + resourceType.directoryName + systemSeparator +
+                        listView.getSelectionModel().getSelectedItem()));
             } catch (NoSuchFileException noSuchFileException) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("File deletion error");
@@ -1410,7 +1437,8 @@ public class TabletopController implements Initializable {
                     if (!musicList.getSelectionModel().isEmpty()){
                         soundName = musicList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        Media media = new Media(new File(RESOURCE_DIRECTORY + soundType.directoryName +
+                                systemSeparator + soundName).toURI().toString());
                         musicPlayer = new MediaPlayer(media);
                         musicPlayer.setAutoPlay(false);
                         musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
@@ -1437,7 +1465,8 @@ public class TabletopController implements Initializable {
                         soundName = ambianceList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
 
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        Media media = new Media(new File(RESOURCE_DIRECTORY + soundType.directoryName +
+                                systemSeparator + soundName).toURI().toString());
                         ambiancePlayer = new MediaPlayer(media);
                         ambiancePlayer.setAutoPlay(false);
                         ambiancePlayer.setCycleCount(MediaPlayer.INDEFINITE);
@@ -1464,7 +1493,8 @@ public class TabletopController implements Initializable {
                         soundName = soundEffectList.getSelectionModel().getSelectedItem();
                         if (soundName == null) return;
 
-                        Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
+                        Media media = new Media(new File(RESOURCE_DIRECTORY + soundType.directoryName +
+                                systemSeparator + soundName).toURI().toString());
                         soundEffectPlayer = new MediaPlayer(media);
                         soundEffectPlayer.setCycleCount(0);
                         soundEffectPlayer.setAutoPlay(false);
