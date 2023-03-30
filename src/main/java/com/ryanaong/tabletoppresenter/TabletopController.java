@@ -180,10 +180,13 @@ public class TabletopController implements Initializable {
         // Enables click behavior for item lists.
         {
             sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            sceneList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
-                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                    if (t1 != null) {
+                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
+                public void handle(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.SCENE);
+                    } else if (mouseEvent.getButton() == MouseButton.PRIMARY){
                         // Clears preview images, live images, and audio.
                         backgroundImage.setImage(null);
                         foregroundImage.setImage(null);
@@ -194,16 +197,16 @@ public class TabletopController implements Initializable {
                             liveForegroundImageView.setImage(null);
                         }
 
-                        clearMediaPlayer(SoundType.MUSIC);
-                        clearMediaPlayer(SoundType.AMBIANCE);
-                        clearMediaPlayer(SoundType.SOUND_EFFECT);
-
                         // Deselects all normal resource names to be reselected later
                         backgroundList.getSelectionModel().clearSelection();
                         foregroundList.getSelectionModel().clearSelection();
                         musicList.getSelectionModel().clearSelection();
                         ambianceList.getSelectionModel().clearSelection();
                         soundEffectList.getSelectionModel().clearSelection();
+
+                        clearMediaPlayer(SoundType.MUSIC);
+                        clearMediaPlayer(SoundType.AMBIANCE);
+                        clearMediaPlayer(SoundType.SOUND_EFFECT);
 
                         // Updates background, foreground, and sounds from selected scene.
 
@@ -241,15 +244,6 @@ public class TabletopController implements Initializable {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }
-                }
-            });
-            sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                @Override
-                // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
-                public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        onDeleteResource(ResourceType.SCENE);
                     }
                     mouseEvent.consume();
                 }
@@ -348,7 +342,19 @@ public class TabletopController implements Initializable {
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        onDeleteResource(ResourceType.MUSIC);
+                        if (musicPlayer == null || musicPlayer.getStatus() == MediaPlayer.Status.DISPOSED) {
+                            onDeleteResource(ResourceType.MUSIC);
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Unable to delete file");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Sound file is currently being locked by program. " +
+                                    "Please wait a few moments until the sound effect is released.");
+                            alert.showAndWait();
+                            if (musicPlayer != null){
+                                musicPlayer.dispose();
+                            }
+                        }
                     }
                     mouseEvent.consume();
                 }
@@ -360,34 +366,47 @@ public class TabletopController implements Initializable {
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        onDeleteResource(ResourceType.AMBIANCE);
+                        if (ambiancePlayer == null || ambiancePlayer.getStatus() == MediaPlayer.Status.DISPOSED){
+                            onDeleteResource(ResourceType.AMBIANCE);
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Unable to delete file");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Sound file is currently being locked by program. " +
+                                    "Please wait a few moments until the sound effect is released.");
+                            alert.showAndWait();
+                            if (ambiancePlayer != null){
+                                ambiancePlayer.dispose();
+                            }
+                        }
                     }
                     mouseEvent.consume();
                 }
             });
 
             soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            soundEffectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                    if (t1 != null) {
-                        String soundEffectName = soundEffectList.getSelectionModel().getSelectedItem();
-
-                        // Do nothing since nothing is selected
-                        if (soundEffectName == null) {
-                            return;
-                        }
-
-                        playSound(SoundType.SOUND_EFFECT);
-                    }
-                }
-            });
             soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        onDeleteResource(ResourceType.SOUND_EFFECT);
+                        if (soundEffectPlayer == null || soundEffectPlayer.getStatus() == MediaPlayer.Status.DISPOSED){
+                            onDeleteResource(ResourceType.SOUND_EFFECT);
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Unable to delete file");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Sound file is currently being locked by program. " +
+                                    "Please wait a few moments until the sound effect is released.");
+                            alert.showAndWait();
+
+                            if (soundEffectPlayer != null){
+                                soundEffectPlayer.dispose();
+                            }
+                        }
+
+                    } else if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                        playSound(SoundType.SOUND_EFFECT);
                     }
                     mouseEvent.consume();
                 }
@@ -452,7 +471,6 @@ public class TabletopController implements Initializable {
 
 
     // Reloads the resource lists. Re-selects the items that were unselected.
-    // Side-effect: Music restarts on load
     @FXML
     private void onRefreshResourcesClicked(){
         // Saves previous selections (if any)
@@ -1093,7 +1111,8 @@ public class TabletopController implements Initializable {
         } catch (Exception e){
             e.printStackTrace();
         }
-
+        
+        // Refreshes directories so new Scene can be seen
         onRefreshResourcesClicked();
     }
 
@@ -1166,6 +1185,18 @@ public class TabletopController implements Initializable {
                 return;
         }
 
+        // There's no media player to free up hence it's safe to delete the resource.
+        if (mediaPlayer == null){
+            if (soundType == SoundType.MUSIC) {
+                deleteResource(ResourceType.MUSIC);
+            } else if (soundType == SoundType.AMBIANCE) {
+                deleteResource(ResourceType.AMBIANCE);
+            } else {
+                deleteResource(ResourceType.SOUND_EFFECT);
+            }
+            return;
+        }
+
         switch (mediaPlayer.getStatus()) {
             case DISPOSED:
                 // Ideal state. Ready for deletion.
@@ -1183,7 +1214,7 @@ public class TabletopController implements Initializable {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Turn off music");
                 alert.setHeaderText(null);
-                alert.setContentText("No music must be playing/paused before music deletion.");
+                alert.setContentText("No audio must be playing/paused before audio deletion.");
                 alert.showAndWait();
                 break;
             case HALTED:
@@ -1241,51 +1272,65 @@ public class TabletopController implements Initializable {
 
         if (result.isPresent() && result.get() == ButtonType.YES){
             try {
-                File file = new File("./" + resourceType.directoryName + "/" + listView.getSelectionModel().getSelectedItem());
-                if (file.delete()) {
-                    switch(resourceType){
-                        case BACKGROUND:
-                            onBackgroundClearedClicked();
-                            break;
-                        case FOREGROUND:
-                            onForegroundClearedClicked();
-                            break;
-                        case MUSIC:
-                            musicList.getSelectionModel().clearSelection();
-                            break;
-                        case AMBIANCE:
-                            ambianceList.getSelectionModel().clearSelection();
-                            break;
-                        case SOUND_EFFECT:
-                            soundEffectList.getSelectionModel().clearSelection();
-                            break;
-                        case SCENE:
-                            sceneList.getSelectionModel().clearSelection();
-                            break;
-                    }
-                    onRefreshResourcesClicked();
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("File deletion error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Could not delete the file from the project directory.");
-                    alert.showAndWait();
-                }
-            } catch (SecurityException securityException){
+                Files.delete(Path.of("./" + resourceType.directoryName + "/" + listView.getSelectionModel().getSelectedItem()));
+            } catch (NoSuchFileException noSuchFileException) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("File deletion error");
                 alert.setHeaderText(null);
-                alert.setContentText("Could not delete the file from the project directory due to permissions." +
-                        " Make sure your anti-virus isn't blocking file deletion.");
+                alert.setContentText("File does not exist.");
                 alert.showAndWait();
-            } catch (Exception e) {
-                e.printStackTrace();
+                noSuchFileException.printStackTrace();
+                return;
+            } catch (IOException ioException){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("File deletion error (I/O)");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable to delete file due to file I/O related error. Remove from resource" +
+                        " directory.");
+                alert.showAndWait();
+                ioException.printStackTrace();
+                return;
+            } catch (SecurityException securityException) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("File deletion error");
                 alert.setHeaderText(null);
-                alert.setContentText("Could not delete the file from the project directory.");
+                alert.setContentText("Unable to delete file due to permissions." +
+                        " Make sure your OS or anti-virus aren't blocking file deletion.");
                 alert.showAndWait();
+                return;
+            } catch (Exception exception){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("File deletion error");
+                alert.setHeaderText(null);
+                alert.setContentText("Unable to delete file. Remove from resource directory.");
+                alert.showAndWait();
+                exception.printStackTrace();
+                return;
             }
+
+            switch(resourceType){
+                case BACKGROUND:
+                    onBackgroundClearedClicked();
+                    break;
+                case FOREGROUND:
+                    onForegroundClearedClicked();
+                    break;
+                case MUSIC:
+                    musicList.getSelectionModel().clearSelection();
+                    break;
+                case AMBIANCE:
+                    ambianceList.getSelectionModel().clearSelection();
+                    break;
+                case SOUND_EFFECT:
+                    soundEffectList.getSelectionModel().clearSelection();
+                    break;
+                case SCENE:
+                    sceneList.getSelectionModel().clearSelection();
+                    break;
+            }
+
+            // Refreshes directories so deleted item doesn't appear.
+            onRefreshResourcesClicked();
         }
     }
 
@@ -1369,6 +1414,7 @@ public class TabletopController implements Initializable {
                         musicPlayer = new MediaPlayer(media);
                         musicPlayer.setAutoPlay(false);
                         musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                        musicPlayer.setVolume(musicSlider.getValue());
                         musicPlayer.play();
 
                         // Updates media menu items
@@ -1395,6 +1441,7 @@ public class TabletopController implements Initializable {
                         ambiancePlayer = new MediaPlayer(media);
                         ambiancePlayer.setAutoPlay(false);
                         ambiancePlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                        ambiancePlayer.setVolume(ambianceSlider.getValue());
                         ambiancePlayer.play();
 
                         // Updates media menu items
@@ -1419,7 +1466,9 @@ public class TabletopController implements Initializable {
 
                         Media media = new Media(new File("./" + soundType.directoryName + "/" + soundName).toURI().toString());
                         soundEffectPlayer = new MediaPlayer(media);
+                        soundEffectPlayer.setCycleCount(0);
                         soundEffectPlayer.setAutoPlay(false);
+                        soundEffectPlayer.setVolume(soundEffectSlider.getValue());
                         soundEffectPlayer.play();
                     } else {
                         return;

@@ -56,10 +56,10 @@
                 <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
                 <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
                 <SeparatorMenuItem/>
-                <MenuItem fx:id="startAmbianceItem" text="Start Ambience" onAction="#onStartAmbianceClicked"/>
-                <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambience" disable="true" onAction="#onResumeAmbianceClicked"/>
-                <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambience" disable="true" onAction="#onPauseAmbianceClicked"/>
-                <MenuItem fx:id="stopAmbianceItem" text="Stop Ambience" disable="true" onAction="#onStopAmbianceClicked"/>
+                <MenuItem fx:id="startAmbianceItem" text="Start Ambiance" onAction="#onStartAmbianceClicked"/>
+                <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambiance" disable="true" onAction="#onResumeAmbianceClicked"/>
+                <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambiance" disable="true" onAction="#onPauseAmbianceClicked"/>
+                <MenuItem fx:id="stopAmbianceItem" text="Stop Ambiance" disable="true" onAction="#onStopAmbianceClicked"/>
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide" onAction="#onUsersGuideClicked"/>
@@ -73,7 +73,7 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
-                <TitledPane fx:id="sceneTitlePane" text="Scenes" expanded="false">
+                <TitledPane fx:id="sceneTitlePane" text="Scenes (click to load)" expanded="false">
                     <ListView fx:id="sceneList" style="-fx-font-style: italic"/>
                 </TitledPane>
                 <TitledPane text="Backgrounds" expanded="false">
@@ -85,10 +85,10 @@
                 <TitledPane text="Music" expanded="false">
                     <ListView fx:id="musicList" />
                 </TitledPane>
-                <TitledPane text="Ambience" expanded="false">
+                <TitledPane text="Ambiance" expanded="false">
                     <ListView fx:id="ambianceList"/>
                 </TitledPane>
-                <TitledPane text="Sound Effects" expanded="false">
+                <TitledPane text="Sound Effects (click to play)" expanded="false">
                     <ListView fx:id="soundEffectList"/>
                 </TitledPane>
             </VBox>
@@ -125,7 +125,7 @@
             <leftItems>
                 <Label fx:id="musicLabel" text="Music: "/>
                 <Slider fx:id="musicSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
-                <Label fx:id="ambianceLabel" text="Ambience: "/>
+                <Label fx:id="ambianceLabel" text="Ambiance: "/>
                 <Slider fx:id="ambianceSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
                 <Label fx:id="soundEffectLabel" text="Sound Effects: "/>
                 <Slider fx:id="soundEffectSlider" max="1.0d" value="0.5d" majorTickUnit="0.5d" minorTickCount="8" showTickMarks="true" snapToTicks="true"/>
