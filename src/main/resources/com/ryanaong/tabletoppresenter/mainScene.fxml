@@ -27,11 +27,11 @@
     <top>
         <MenuBar>
             <Menu text="_File">
-                <MenuItem text="Import background" onAction="#onLoadBackground"/>
                 <MenuItem text="Import foreground" onAction="#onLoadForeground"/>
-                <MenuItem text="Import music" onAction="#onLoadMusic"/>
-                <MenuItem text="Import ambiance" onAction="#onLoadAmbiance"/>
+                <MenuItem text="Import background" onAction="#onLoadBackground"/>
                 <MenuItem text="Import sound effect" onAction="#onLoadSoundEffect"/>
+                <MenuItem text="Import ambiance" onAction="#onLoadAmbiance"/>
+                <MenuItem text="Import music" onAction="#onLoadMusic"/>
                 <MenuItem text="Reload resources" onAction="#onRefreshResourcesClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
@@ -44,22 +44,22 @@
                 <MenuItem fx:id="unfreezePresenterItem" text="Unfreeze presentation" disable="true" onAction="#onUnFreezePresenter"/>
             </Menu>
             <Menu text="_Scene">
-                <MenuItem text="Clear background" onAction="#onBackgroundClearedClicked"/>
+                <MenuItem text="Clear scene" onAction="#onAllClearedClicked"/>
                 <MenuItem text="Clear foreground" onAction="#onForegroundClearedClicked"/>
-                <MenuItem text="Clear all" onAction="#onAllClearedClicked"/>
+                <MenuItem text="Clear background" onAction="#onBackgroundClearedClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Save scene" onAction="#onSaveSceneClicked"/>
             </Menu>
             <Menu text="_Audio">
-                <MenuItem fx:id="startMusicItem" text="Start Music" onAction="#onStartMusicClicked"/>
-                <MenuItem fx:id="resumeMusicItem" text="Resume Music" disable="true" onAction="#onResumeMusicClicked"/>
-                <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
-                <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
-                <SeparatorMenuItem/>
                 <MenuItem fx:id="startAmbianceItem" text="Start Ambiance" onAction="#onStartAmbianceClicked"/>
                 <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambiance" disable="true" onAction="#onResumeAmbianceClicked"/>
                 <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambiance" disable="true" onAction="#onPauseAmbianceClicked"/>
                 <MenuItem fx:id="stopAmbianceItem" text="Stop Ambiance" disable="true" onAction="#onStopAmbianceClicked"/>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="startMusicItem" text="Start Music" onAction="#onStartMusicClicked"/>
+                <MenuItem fx:id="resumeMusicItem" text="Resume Music" disable="true" onAction="#onResumeMusicClicked"/>
+                <MenuItem fx:id="pauseMusicItem" text="Pause Music" disable="true" onAction="#onPauseMusicClicked"/>
+                <MenuItem fx:id="stopMusicItem" text="Stop Music" disable="true" onAction="#onStopMusicClicked"/>
             </Menu>
             <Menu text="_Info">
                 <MenuItem text="User's Guide" onAction="#onUsersGuideClicked"/>
@@ -73,23 +73,23 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="TOP_CENTER">
             <VBox>
-                <TitledPane fx:id="sceneTitlePane" text="Scenes (click to load)" expanded="false">
+                <TitledPane text="Scenes" expanded="false">
                     <ListView fx:id="sceneList" style="-fx-font-style: italic"/>
-                </TitledPane>
-                <TitledPane text="Backgrounds" expanded="false">
-                    <ListView fx:id="backgroundList"/>
                 </TitledPane>
                 <TitledPane text="Foregrounds" expanded="false">
                     <ListView fx:id="foregroundList"/>
                 </TitledPane>
-                <TitledPane text="Music" expanded="false">
-                    <ListView fx:id="musicList" />
+                <TitledPane text="Backgrounds" expanded="false">
+                    <ListView fx:id="backgroundList"/>
+                </TitledPane>
+                <TitledPane text="Sound Effects" expanded="false">
+                    <ListView fx:id="soundEffectList"/>
                 </TitledPane>
                 <TitledPane text="Ambiance" expanded="false">
                     <ListView fx:id="ambianceList"/>
                 </TitledPane>
-                <TitledPane text="Sound Effects (click to play)" expanded="false">
-                    <ListView fx:id="soundEffectList"/>
+                <TitledPane text="Music" expanded="false">
+                    <ListView fx:id="musicList" />
                 </TitledPane>
             </VBox>
         </ScrollPane>

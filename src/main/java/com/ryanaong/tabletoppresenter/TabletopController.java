@@ -96,10 +96,6 @@ public class TabletopController implements Initializable {
     @FXML
     public ListView<String> soundEffectList;
 
-    // Title Pane
-    @FXML
-    public TitledPane sceneTitlePane;
-
     // Canvas
     @FXML
     private Canvas previewCanvas;
@@ -189,11 +185,10 @@ public class TabletopController implements Initializable {
             sceneList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             sceneList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
+                // If left-clicked the scene is loaded
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        onDeleteResource(ResourceType.SCENE);
-                    } else if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY){
                         // Clears preview images, live images, and audio.
                         backgroundImage.setImage(null);
                         foregroundImage.setImage(null);
@@ -251,8 +246,11 @@ public class TabletopController implements Initializable {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                        onDeleteResource(ResourceType.SCENE);
+                        mouseEvent.consume();
                     }
-                    mouseEvent.consume();
                 }
             });
 
@@ -347,9 +345,13 @@ public class TabletopController implements Initializable {
             musicList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             musicList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
+                // If left-clicked, the music plays.
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                        playSound(SoundType.MUSIC);
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (musicPlayer == null || musicPlayer.getStatus() == MediaPlayer.Status.DISPOSED) {
                             onDeleteResource(ResourceType.MUSIC);
                         } else {
@@ -363,17 +365,22 @@ public class TabletopController implements Initializable {
                                 musicPlayer.dispose();
                             }
                         }
+                        mouseEvent.consume();
                     }
-                    mouseEvent.consume();
+
                 }
             });
 
             ambianceList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             ambianceList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
+                // Plays ambiance if left-clicked.
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                        playSound(SoundType.AMBIANCE);
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (ambiancePlayer == null || ambiancePlayer.getStatus() == MediaPlayer.Status.DISPOSED){
                             onDeleteResource(ResourceType.AMBIANCE);
                         } else {
@@ -387,17 +394,21 @@ public class TabletopController implements Initializable {
                                 ambiancePlayer.dispose();
                             }
                         }
+                        mouseEvent.consume();
                     }
-                    mouseEvent.consume();
                 }
             });
 
             soundEffectList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             soundEffectList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
+                // Plays sound effect if left-clicked.
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY ){
+                        playSound(SoundType.SOUND_EFFECT);
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (soundEffectPlayer == null || soundEffectPlayer.getStatus() == MediaPlayer.Status.DISPOSED){
                             onDeleteResource(ResourceType.SOUND_EFFECT);
                         } else {
@@ -412,11 +423,8 @@ public class TabletopController implements Initializable {
                                 soundEffectPlayer.dispose();
                             }
                         }
-
-                    } else if (mouseEvent.getButton() == MouseButton.PRIMARY){
-                        playSound(SoundType.SOUND_EFFECT);
+                        mouseEvent.consume();
                     }
-                    mouseEvent.consume();
                 }
             });
         }
