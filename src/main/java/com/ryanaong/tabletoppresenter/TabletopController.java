@@ -225,17 +225,19 @@ public class TabletopController implements Initializable {
                             jsonObject = new JSONObject(sb.toString());
                             if (jsonObject.has("background")) {
                                 backgroundList.getSelectionModel().select((String) jsonObject.get("background"));
+                                loadResourceFromSelectedItem(ResourceType.BACKGROUND, backgroundList.getSelectionModel().getSelectedItem());
                             }
                             if (jsonObject.has("foreground")) {
                                 foregroundList.getSelectionModel().select((String) jsonObject.get("foreground"));
+                                loadResourceFromSelectedItem(ResourceType.FOREGROUND, foregroundList.getSelectionModel().getSelectedItem());
                             }
                             if (jsonObject.has("music")) {
                                 musicList.getSelectionModel().select((String) jsonObject.get("music"));
-                                playSound(SoundType.MUSIC);
+                                loadResourceFromSelectedItem(ResourceType.MUSIC, musicList.getSelectionModel().getSelectedItem());
                             }
                             if (jsonObject.has("ambiance")) {
                                 ambianceList.getSelectionModel().select((String) jsonObject.get("ambiance"));
-                                playSound(SoundType.AMBIANCE);
+                                loadResourceFromSelectedItem(ResourceType.AMBIANCE, ambianceList.getSelectionModel().getSelectedItem());
                             }
                         } catch (IOException e) {
                             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -255,90 +257,33 @@ public class TabletopController implements Initializable {
             });
 
             backgroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            backgroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                    if (t1 != null) {
-                        // Updates preview window with clicked resource
-                        String backgroundName = backgroundList.getSelectionModel().getSelectedItem();
-
-                        // Do nothing since nothing is selected
-                        if (backgroundName == null) {
-                            return;
-                        }
-
-                        Image image;
-                        try (FileInputStream fileInputStream = new FileInputStream(RESOURCE_DIRECTORY + ResourceType.BACKGROUND.directoryName +
-                                systemSeparator + backgroundName)) {
-                            image = new Image(fileInputStream);
-                            backgroundImage.setImage(image);
-                            if (liveBackgroundImageView != null && !isFrozen) {
-                                liveBackgroundImageView.setImage(image);
-                            }
-                        } catch (IOException e) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Background Load Error");
-                            alert.setHeaderText(null);
-                            alert.setContentText("Unable to load background from project resource folder.");
-                            alert.showAndWait();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
             backgroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
+                // If left-clicked, the background is displayed.
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                        // Updates preview window with clicked resource
+                        loadResourceFromSelectedItem(ResourceType.BACKGROUND, backgroundList.getSelectionModel().getSelectedItem());
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         onDeleteResource(ResourceType.BACKGROUND);
                     }
-                    mouseEvent.consume();
                 }
             });
 
             foregroundList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            foregroundList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-                @Override
-                // Updates preview window with clicked resource
-                public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                    if (t1 != null) {
-                        String foregroundName = foregroundList.getSelectionModel().getSelectedItem();
-
-                        // Do nothing since nothing is selected
-                        if (foregroundName == null) {
-                            return;
-                        }
-
-                        Image image;
-                        try (FileInputStream fileInputStream = new FileInputStream(RESOURCE_DIRECTORY +
-                                ResourceType.FOREGROUND.directoryName + systemSeparator + foregroundName)) {
-                            image = new Image(fileInputStream);
-                            foregroundImage.setImage(image);
-                            if (liveForegroundImageView != null && !isFrozen) {
-                                liveForegroundImageView.setImage(image);
-                            }
-                        } catch (IOException e) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Foreground Load Error");
-                            alert.setHeaderText(null);
-                            alert.setContentText("Unable to load foreground from project resource folder.");
-                            alert.showAndWait();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
             foregroundList.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
-                    if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY){
+                        loadResourceFromSelectedItem(ResourceType.FOREGROUND, foregroundList.getSelectionModel().getSelectedItem());
+                        mouseEvent.consume();
+                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         onDeleteResource(ResourceType.FOREGROUND);
+                        mouseEvent.consume();
                     }
-                    mouseEvent.consume();
                 }
             });
 
@@ -349,7 +294,7 @@ public class TabletopController implements Initializable {
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY){
-                        playSound(SoundType.MUSIC);
+                        loadResourceFromSelectedItem(ResourceType.MUSIC, musicList.getSelectionModel().getSelectedItem());
                         mouseEvent.consume();
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (musicPlayer == null || musicPlayer.getStatus() == MediaPlayer.Status.DISPOSED) {
@@ -378,7 +323,7 @@ public class TabletopController implements Initializable {
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY){
-                        playSound(SoundType.AMBIANCE);
+                        loadResourceFromSelectedItem(ResourceType.AMBIANCE, ambianceList.getSelectionModel().getSelectedItem());
                         mouseEvent.consume();
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (ambiancePlayer == null || ambiancePlayer.getStatus() == MediaPlayer.Status.DISPOSED){
@@ -406,7 +351,7 @@ public class TabletopController implements Initializable {
                 // If an item is right-clicked, a dialog asks the user for deletion and deletes it if confirmed.
                 public void handle(MouseEvent mouseEvent) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY ){
-                        playSound(SoundType.SOUND_EFFECT);
+                        loadResourceFromSelectedItem(ResourceType.SOUND_EFFECT, soundEffectList.getSelectionModel().getSelectedItem());
                         mouseEvent.consume();
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         if (soundEffectPlayer == null || soundEffectPlayer.getStatus() == MediaPlayer.Status.DISPOSED){
@@ -485,11 +430,15 @@ public class TabletopController implements Initializable {
         });
     }
 
-
     // Reloads the resource lists. Re-selects the items that were unselected.
     @FXML
     private void onRefreshResourcesClicked(){
         // Saves previous selections (if any)
+
+        String prevScene = null;
+        if (!sceneList.getSelectionModel().isEmpty()){
+            prevScene = sceneList.getSelectionModel().getSelectedItem();
+        }
 
         String prevBackground = null;
         if(!backgroundList.getSelectionModel().isEmpty()){
@@ -565,6 +514,9 @@ public class TabletopController implements Initializable {
         }
 
         // Restores previous selections (if any)
+        if (prevScene != null){
+            sceneList.getSelectionModel().select(prevScene);
+        }
 
         if (prevBackground != null){
             backgroundList.getSelectionModel().select(prevBackground);
@@ -923,7 +875,7 @@ public class TabletopController implements Initializable {
     @FXML
     // When the presenter window is open and the user ends the presentation either by closing the window or selecting
     // the End Presentation option in the MenuBar, the window is closed (if open), only the Start Presentation option
-    // is enabled in the MenuBar, and the StatusBar is updated. Clears frozen status.
+    // is enabled in the MenuBar, and the StatusBar is updated. Clears frozen status. Stops sounds.
     private void onEndPresenter(){
         if (liveStage != null){
             liveStage.close();
@@ -942,6 +894,11 @@ public class TabletopController implements Initializable {
 
         // Updates status bar
         presenterStatus.setText("Not presenting");
+
+        // Stops all sounds
+        stopSound(SoundType.MUSIC);
+        stopSound(SoundType.AMBIANCE);
+        stopSound(SoundType.AMBIANCE);
     }
 
     @FXML
@@ -1063,6 +1020,7 @@ public class TabletopController implements Initializable {
         musicList.getSelectionModel().clearSelection();
         ambianceList.getSelectionModel().clearSelection();
         soundEffectList.getSelectionModel().clearSelection();
+
         clearMediaPlayer(SoundType.MUSIC);
         clearMediaPlayer(SoundType.AMBIANCE);
         clearMediaPlayer(SoundType.SOUND_EFFECT);
@@ -1738,6 +1696,54 @@ public class TabletopController implements Initializable {
                 }
                 break;
             default:
+        }
+    }
+
+    // Displays the selected resource that's selected from the corresponding list.
+    private void loadResourceFromSelectedItem(ResourceType resourceType, String selectedItemName){
+        // Do nothing since nothing is selected
+        if (selectedItemName == null) {
+            return;
+        }
+
+        Image image;
+        try (FileInputStream fileInputStream = new FileInputStream(RESOURCE_DIRECTORY +
+                resourceType.directoryName + systemSeparator + selectedItemName)) {
+            switch(resourceType){
+                case BACKGROUND:
+                    image = new Image(fileInputStream);
+                    backgroundImage.setImage(image);
+                    if (liveBackgroundImageView != null && !isFrozen) {
+                        liveBackgroundImageView.setImage(image);
+                    }
+                    break;
+                case FOREGROUND:
+                    image = new Image(fileInputStream);
+                    foregroundImage.setImage(image);
+                    if (liveForegroundImageView != null && !isFrozen) {
+                        liveForegroundImageView.setImage(image);
+                    }
+                    break;
+                case MUSIC:
+                    playSound(SoundType.MUSIC);
+                    break;
+                case AMBIANCE:
+                    playSound(SoundType.AMBIANCE);
+                    break;
+                case SOUND_EFFECT:
+                    playSound(SoundType.SOUND_EFFECT);
+                    break;
+                default:
+            }
+
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Resource Load Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Unable to load resource from project resource folder.");
+            alert.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
