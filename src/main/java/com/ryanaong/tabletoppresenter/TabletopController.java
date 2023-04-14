@@ -108,6 +108,12 @@ public class TabletopController implements Initializable {
 
     // Menus
     @FXML
+    private MenuItem stopAllSoundsItem;
+    @FXML
+    private MenuItem startSoundEffectItem;
+    @FXML
+    private MenuItem stopSoundEffectItem;
+    @FXML
     private MenuItem startMusicItem;
     @FXML
     private MenuItem pauseMusicItem;
@@ -1026,12 +1032,6 @@ public class TabletopController implements Initializable {
         clearMediaPlayer(SoundType.SOUND_EFFECT);
     }
 
-    // When the user clicks 'Pause Music' in menu bar, music pauses.
-    @FXML
-    private void onPauseMusicClicked(){
-        pauseSound(SoundType.MUSIC);
-    }
-
     @FXML
     private void onSaveSceneClicked(){
         // Alert the user that nothing is selected so the scene is not saved.
@@ -1357,10 +1357,24 @@ public class TabletopController implements Initializable {
         Platform.exit();
     }
 
+    // When user clicks 'Stop All Sounds' in menu bar, all sounds end.
+    @FXML
+    private void onStopAllSoundsClicked(ActionEvent actionEvent) {
+        stopSound(SoundType.SOUND_EFFECT);
+        stopSound(SoundType.AMBIANCE);
+        stopSound(SoundType.MUSIC);
+    }
+
     // When the user clicks 'Start Music' in menu bar, music starts.
     @FXML
     private void onStartMusicClicked() {
         playSound(SoundType.MUSIC);
+    }
+
+    // When the user clicks 'Pause Music' in menu bar, music pauses.
+    @FXML
+    private void onPauseMusicClicked(){
+        pauseSound(SoundType.MUSIC);
     }
 
     // When the user clicks 'Resume Music' in menu bar, music resumes.
@@ -1393,6 +1407,16 @@ public class TabletopController implements Initializable {
     @FXML
     private void onStopAmbianceClicked(ActionEvent actionEvent) {
         stopSound(SoundType.AMBIANCE);
+    }
+
+    @FXML
+    private void onStartSoundEffectClicked(){
+        playSound(SoundType.SOUND_EFFECT);
+    }
+
+    @FXML
+    private void onStopSoundEffectClicked(){
+        stopSound(SoundType.SOUND_EFFECT);
     }
 
     // Creates a new instance of specified media and media player and plays it.
@@ -1613,26 +1637,35 @@ public class TabletopController implements Initializable {
             case AMBIANCE:
                 mediaPlayer = ambiancePlayer;
                 break;
+            case SOUND_EFFECT:
+                mediaPlayer = soundEffectPlayer;
+                break;
             default:
-                return; // Don't stop sound effects
+                return;
         }
 
+        // If mediaPlayer is already free, then update menu items.
         if (mediaPlayer == null){
             // Resets proper menu items
-            if (soundType == SoundType.MUSIC) {
-                startMusicItem.setDisable(false);
-                pauseMusicItem.setDisable(true);
-                resumeMusicItem.setDisable(true);
-                stopMusicItem.setDisable(true);
-            } else {
-                startAmbianceItem.setDisable(false);
-                pauseAmbianceItem.setDisable(true);
-                resumeAmbianceItem.setDisable(true);
-                stopAmbianceItem.setDisable(true);
+            switch (soundType){
+                case AMBIANCE:
+                    startAmbianceItem.setDisable(false);
+                    pauseAmbianceItem.setDisable(true);
+                    resumeAmbianceItem.setDisable(true);
+                    stopAmbianceItem.setDisable(true);
+                    break;
+                case MUSIC:
+                    startMusicItem.setDisable(false);
+                    pauseMusicItem.setDisable(true);
+                    resumeMusicItem.setDisable(true);
+                    stopMusicItem.setDisable(true);
+                    break;
             }
+
             return;
         }
 
+        // Since there is a mediaPlayer, check if it's disposed.
         switch (mediaPlayer.getStatus()){
             case HALTED:
             case DISPOSED:
@@ -1645,19 +1678,23 @@ public class TabletopController implements Initializable {
                 mediaPlayer.stop();
 
                 // Updates proper menu items
-                if (soundType == SoundType.MUSIC) {
-                    startMusicItem.setDisable(false);
-                    pauseMusicItem.setDisable(true);
-                    resumeMusicItem.setDisable(true);
-                    stopMusicItem.setDisable(true);
-                } else {
-                    startAmbianceItem.setDisable(false);
-                    pauseAmbianceItem.setDisable(true);
-                    resumeAmbianceItem.setDisable(true);
-                    stopAmbianceItem.setDisable(true);
+                switch(soundType){
+                    case AMBIANCE:
+                        startAmbianceItem.setDisable(false);
+                        pauseAmbianceItem.setDisable(true);
+                        resumeAmbianceItem.setDisable(true);
+                        stopAmbianceItem.setDisable(true);
+                        break;
+                    case MUSIC:
+                        startMusicItem.setDisable(false);
+                        pauseMusicItem.setDisable(true);
+                        resumeMusicItem.setDisable(true);
+                        stopMusicItem.setDisable(true);
+                        break;
+                    default:
+                        return;
                 }
 
-                //clearMediaPlayer(soundType);
                 break;
         }
     }

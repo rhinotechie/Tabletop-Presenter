@@ -32,6 +32,7 @@
                 <MenuItem text="Import sound effect" onAction="#onLoadSoundEffect"/>
                 <MenuItem text="Import ambiance" onAction="#onLoadAmbiance"/>
                 <MenuItem text="Import music" onAction="#onLoadMusic"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="Reload resources" onAction="#onRefreshResourcesClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Exit" onAction="#onExitClicked"/>
@@ -45,12 +46,18 @@
             </Menu>
             <Menu text="_Scene">
                 <MenuItem text="Clear scene" onAction="#onAllClearedClicked"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="Clear foreground" onAction="#onForegroundClearedClicked"/>
                 <MenuItem text="Clear background" onAction="#onBackgroundClearedClicked"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="Save scene" onAction="#onSaveSceneClicked"/>
             </Menu>
             <Menu text="_Audio">
+                <MenuItem fx:id="stopAllSoundsItem" text="Stop All Sounds" onAction="#onStopAllSoundsClicked"/>
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="startSoundEffectItem" text="Start SoundEffect" onAction="#onStartSoundEffectClicked"/>
+                <MenuItem fx:id="stopSoundEffectItem" text="Stop Sound Effect" onAction="#onStopSoundEffectClicked"/>
+                <SeparatorMenuItem/>
                 <MenuItem fx:id="startAmbianceItem" text="Start Ambiance" onAction="#onStartAmbianceClicked"/>
                 <MenuItem fx:id="resumeAmbianceItem" text="Resume Ambiance" disable="true" onAction="#onResumeAmbianceClicked"/>
                 <MenuItem fx:id="pauseAmbianceItem" text="Pause Ambiance" disable="true" onAction="#onPauseAmbianceClicked"/>
